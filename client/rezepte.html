@@ -1,0 +1,55 @@
+<head>
+    <title>Rezepte</title>
+</head>
+
+<body>
+  <header>
+  {{> suche}}
+  </header>
+
+  <aside id="rezepte">
+  {{> rezepte}}
+  </aside>
+
+  <section id="content">
+  {{> detail }}
+  </section>
+</body>
+
+<template name="suche">
+    <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
+</template>
+
+<template name="rezepte">
+    {{#if loading}}
+    Une minute...
+    {{else}}
+    <ul>
+        <input type="text" id="new-rezept" placeholder="Neu…" />
+    {{#each rezepte}}
+        <li class="click">{{name}}</li>
+    {{/each}}
+    </ul>
+    {{/if}}
+</template>
+
+<template name="zutaten">
+    <ul>
+        <input type="text" id="new-zutat" placeholder="Neu…" />
+    {{#each zutaten}}
+        <li class="click">{{name}}</li>
+    {{/each}}
+    </ul>
+</template>
+
+<template name="detail">
+    {{#if active}}
+        {{#if editing}}
+            <textarea id="editor">{{ rezept.text }}</textarea>
+        {{else}}
+            {{{ parse }}}
+        {{/if}}
+    {{else}}
+    (nichts ausgewählt)
+    {{/if}}
+</template>

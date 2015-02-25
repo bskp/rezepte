@@ -1,0 +1,191 @@
+// Colors
+
+@sheet: #fff;
+@chrome: #444;
+
+// Dimensions
+@margin: 350px;
+@gutter: 80px;
+
+// Fixes
+
+body{
+    margin: 0;
+    padding: 0;
+}
+
+input, select, textarea{
+    font: inherit;
+    border-style: none;
+    color: inherit;
+    background-color: inherit;
+    text-align: inherit;
+    margin: 0;
+}
+
+// Layout
+
+body{
+    background-color: @chrome;
+}
+
+
+aside{
+    background-color: @chrome;
+    color: @sheet;
+    position: absolute;
+    top: 0;
+
+    font: 0.5em/1.3em 'DIN';
+    // TODO proper font-download!
+
+
+    width: 220px;
+    padding: 0 1em;
+
+    ul{
+        list-style-type: none;
+        padding: 0;
+    }
+
+    &#rezepte{ right: 0; }
+    &#zutaten{
+        left: 0;
+        text-align: right;
+    }
+
+}
+
+#content{
+    position: absolute;
+    right: 250px;
+    left: 0;
+    top: 0;
+    min-height: 100%;
+
+    padding: 0 2em;
+    padding-left: @margin;
+    
+    background-color: @sheet;
+    box-shadow: 0 0 20px;
+
+
+    textarea {
+        font-family: camingo;
+        font-size: 16px;
+        width: 100%;
+        height: 800px;
+    }
+
+    p, ol{
+        padding-left: 0;
+        margin-top: 0;
+
+        li { margin-bottom: 0.5em; }
+    }
+
+    & > p:first-child{
+        font-style: italic;
+        margin: 1em 0;
+    }
+
+    .tag{ display: none; }
+
+    table{
+        font-size: 0.9em;
+        border-collapse: collapse;
+
+        p{
+            margin: 0;
+            padding: 0;
+        }
+
+        td:first-child{
+            font-style: italic;
+            width: 50%;
+        }
+
+        td{
+            //vertical-align: top;
+            border-top: 1px solid #ddd;
+            padding: 0.1em 0;
+        }
+
+        tr:first-child td{
+            border-top-style: none;
+        }
+    }
+}
+
+
+ul.ingredients{
+    list-style-type: none;
+    font-style: italic;
+    text-align: right;
+    font-family: pica;
+    font-size: 0.9em;
+
+    width: @margin - @gutter - 10px;
+    position: absolute;
+    left: 0;
+    margin-top: 0;
+    padding-left: 10px;
+
+    li{
+    }
+}
+
+
+// Typo
+
+body{
+    font-family: double_pica;
+    font-size: 25px;
+    cursor: default;
+}
+
+h1{
+    font-family: three_line_pica;
+    font-weight: normal;
+    text-transform: uppercase;
+    font-size: 2.6em;
+    text-align: left;
+    margin-left: -0.05em;
+
+    &::before{
+        content: 'x';
+        // adgjmoqrwxyz
+        font-style: normal;
+        text-align: right;
+        font-family: flowers2;
+        display: block;
+        width: @margin - @gutter;
+        position: absolute;
+        left: 0;
+        margin-top: -0.1em;
+    }
+}
+
+h2{
+    font-size: 1.5em;
+    font-weight: normal;
+    font-style: italic;
+
+    margin: 1em 0 0.5em;
+    clear: both;
+}
+
+b, i{
+    font-weight: inherit;
+    font-style: inherit;
+}
+
+
+.click{
+    cursor: pointer;
+
+    &:hover{
+        text-decoration: underline;
+    }
+
+}
