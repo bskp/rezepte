@@ -16,6 +16,7 @@
   </section>
 </body>
 
+
 <template name="suche">
     <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
 </template>
@@ -27,7 +28,7 @@
     <ul>
         <input type="text" id="new-rezept" placeholder="Neu…" />
     {{#each rezepte}}
-        <li class="click">{{name}}</li>
+    <li class="click">{{#if name}}{{name}}{{else}}(ohne Titel){{/if}}</li>
     {{/each}}
     </ul>
     {{/if}}

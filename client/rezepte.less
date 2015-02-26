@@ -36,7 +36,7 @@ aside{
     position: absolute;
     top: 0;
 
-    font: 0.5em/1.3em 'DIN';
+    font: 0.5em/1.3em 'DIN', Helvetica, Arial, sans-serif;
     // TODO proper font-download!
 
 
@@ -188,4 +188,20 @@ b, i{
         text-decoration: underline;
     }
 
+}
+
+
+@media (max-width: 1200px) {
+    #content{
+        right: 150px;
+    }
+
+    aside{
+        width: 120px;
+    }
+
+    .click{
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
+    }
 }
