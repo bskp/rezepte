@@ -3,11 +3,8 @@
 </head>
 
 <body>
-  <header>
-  {{> suche}}
-  </header>
-
   <aside id="rezepte">
+  {{> suche}}
   {{> rezepte}}
   </aside>
 
@@ -15,7 +12,6 @@
   {{> detail }}
   </section>
 </body>
-
 
 <template name="suche">
     <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
@@ -28,7 +24,7 @@
     <ul>
         <input type="text" id="new-rezept" placeholder="Neu…" />
     {{#each rezepte}}
-    <li class="click">{{#if name}}{{name}}{{else}}(ohne Titel){{/if}}</li>
+        <li class="click">{{name}}</li>
     {{/each}}
     </ul>
     {{/if}}
@@ -44,6 +40,7 @@
 </template>
 
 <template name="detail">
+    <div>
     {{#if active}}
         {{#if editing}}
             <textarea id="editor">{{ rezept.text }}</textarea>
@@ -53,4 +50,5 @@
     {{else}}
     (nichts ausgewählt)
     {{/if}}
+    </div>
 </template>

@@ -108,8 +108,27 @@
             });
         }
 
+        // Block: Comments
+        
+        var comment_row = '(^|\\n)(.+?) *~T *([^\\n]*)';
+        comment_row = new RegExp(comment_row, 'g');
+
+        il_comments = function(text) {
+            return text.replace(comment_row, function(_, _, text, name){
+                if (name){
+                    return '<em>'+text+' –\xA0'+name+'</em>\n';
+                } else {
+                    return '<em>'+text+'</em>';
+                }
+            });
+        }
+
 
         return [
+        {
+            type: 'lang',
+            filter: il_comments
+        },
         {
             type: 'lang',
             filter: il_tags
@@ -124,18 +143,6 @@
         }
         ];
     };
-
-/*
-    // Client-side export
-    if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { 
-        window.Showdown.extensions.rezepte = rezepte;
-        alert(Showdown);
-    }
-    // Server-side export
-    if (typeof module !== 'undefined') {
-        module.exports = rezepte;
-    }
-*/
 
 // METEOR CHANGE: export this differently. 
     Showdown.extensions.rezepte = rezepte;

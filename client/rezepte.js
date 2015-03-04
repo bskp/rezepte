@@ -93,6 +93,14 @@ Template.rezepte.rezepte = function() {
             if (rezept.name.toLowerCase().search(query.toLowerCase()) >= 0){
                 filtered.push(rezept);
             }
+            /*
+            if ('tags' in rezept && (rezept.tags.indexOf(query) >= 0)){
+                filtered.push(rezept);
+            }
+            */
+            if ('ingr' in rezept && (rezept.ingr.indexOf(query) >= 0)){
+                filtered.push(rezept);
+            }
         });
         return filtered;
     } else {
@@ -126,11 +134,14 @@ Template.zutaten.zutaten = function() {
 
 ////////// Detail //////////
 Template.detail.events({
-    'dblclick *': function(evt) {
-        console.log('dblclick'+Session.get('rezept_id'));
+    'mousedown': function(evt) {
+        if (evt.button!=2){ return } // right-click only
         Session.set('editing', true);
     },
-    'dblclick #editor': function(evt, tmpl) {
+    'contextmenu': function(evt) { evt.preventDefault(); },
+    'mousedown #editor': function(evt, tmpl) {
+        if (evt.button!=2){ return } // right-click only
+
         var r = Rezepte.findOne( Session.get('rezept_id') );
         r.text = tmpl.find('textarea').value;
 
@@ -139,7 +150,8 @@ Template.detail.events({
         // TODO update ingredient list!
 
         r.name = html.filter('h1').text();
-        r.tags = html.children('.tag');
+        r.tags = _.map(html.children('.tag'), function(tag){ return tag.innerHTML } )
+        r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
 
         Rezepte.update(r._id, r);
         Session.set('editing', false);
