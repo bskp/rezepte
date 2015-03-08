@@ -116,9 +116,9 @@
         il_comments = function(text) {
             return text.replace(comment_row, function(_, _, text, name){
                 if (name){
-                    return '<em>'+text+' –\xA0'+name+'</em>\n';
+                    return '\n<em>'+text+' –\xA0'+name+'</em>\n';
                 } else {
-                    return '<em>'+text+'</em>';
+                    return '\n<em>'+text+'</em>';
                 }
             });
         }

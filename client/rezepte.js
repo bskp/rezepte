@@ -4,7 +4,9 @@
 Rezepte = new Mongo.Collection("rezepte");
 Zutaten = new Mongo.Collection("zutaten");
 
-var rezepteHandle = Meteor.subscribe('rezepte');
+var rezepteHandle = Meteor.subscribe('rezepte', function(){
+    Session.set('rezept_id', Rezepte.findOne({}, {sort: {name:1}}));
+});
 var zutatHandle = Meteor.subscribe('zutaten');
 
 
@@ -12,42 +14,7 @@ Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
 Session.setDefault('editing', false);
 
-
-////////// Helpers for in-place editing //////////
-
-// Returns an event map that handles the "escape" and "return" keys and
-// "blur" events on a text input (given by selector) and interprets them
-// as "ok" or "cancel".
-var okCancelEvents = function (selector, callbacks) {
-  var ok = callbacks.ok || function () {};
-  var cancel = callbacks.cancel || function () {};
-
-  var events = {};
-  events['keyup '+selector+', keydown '+selector+', focusout '+selector] =
-    function (evt) {
-      if (evt.type === "keydown" && evt.which === 27) {
-        // escape = cancel
-        cancel.call(this, evt);
-
-      } else if (evt.type === "keyup" && evt.which === 13 ||
-                 evt.type === "focusout") {
-        // blur/return/enter = ok/submit if non-empty
-        var value = String(evt.target.value || "");
-        if (value)
-          ok.call(this, value, evt);
-        else
-          cancel.call(this, evt);
-      }
-    };
-
-  return events;
-};
-
-var activateInput = function (input) {
-  input.focus();
-  input.select();
-};
-
+//
 ////////// Suche //////////
 
 Template.suche.events({
@@ -59,22 +26,24 @@ Template.suche.events({
 
 ////////// Rezepte //////////
 
-Template.rezepte.events(okCancelEvents(
-  '#new-rezept',
-  {
-    ok: function (name, evt) {
-      Rezepte.insert({
-        name: name,
-        text: null,
-      });
-      evt.target.value = '';
-    }
-  }));
-
 Template.rezepte.events({
-  'mousedown li': function (evt) { // select list
+  'mousedown li': function (evt) { // change current
+    var r = Rezepte.findOne( Session.get('rezept_id') );
+
+    if (r && !r.text){  
+        Rezepte.remove(r._id);
+    }
+
     Session.set('editing', false);
     Session.set('rezept_id', this._id);
+  },
+  'mousedown #new-rezept': function (evt) {
+    var curr = Rezepte.insert({
+        name: 'Neues Rezept',
+        text: null,
+    });
+    Session.set('rezept_id', curr);
+    Session.set('editing', true);
   }
 });
 
@@ -85,12 +54,12 @@ Template.rezepte.loading = function() {
 Template.rezepte.rezepte = function() {
     // Determine recipes to display
     var all = Rezepte.find({}, {sort: {name: 1}})
-    var query = Session.get('filter');
+    var query = Session.get('filter') ? Session.get('filter').toLowerCase() : '';
 
     if (query){
         var filtered = [];
         all.map( function(rezept){
-            if (rezept.name.toLowerCase().search(query.toLowerCase()) >= 0){
+            if (rezept.name.toLowerCase().search(query) >= 0){
                 filtered.push(rezept);
             }
             /*
@@ -108,29 +77,6 @@ Template.rezepte.rezepte = function() {
     }
 }
 
-
-////////// Zutaten //////////
-
-Template.zutaten.events(okCancelEvents(
-  '#new-zutat',
-  {
-    ok: function (name, evt) {
-      Zutaten.insert({
-        name: name
-      });
-      evt.target.value = '';
-    }
-  }));
-
-Template.zutaten.events({
-  'mousedown li': function (evt) { // select list
-      alert(evt.target.value);
-  }
-});
-
-Template.zutaten.zutaten = function() {
-    return Zutaten.find();
-}
 
 ////////// Detail //////////
 Template.detail.events({
@@ -155,25 +101,38 @@ Template.detail.events({
 
         Rezepte.update(r._id, r);
         Session.set('editing', false);
+    },
+    'keydown #editor': function(evt, tmpl) {
+        if (evt.keyCode == 9){
+            evt.preventDefault();
+            $(evt.target).insertAtCaret('    ');
+        }
+        if (evt.keyCode == 13){
+            if ($(evt.target).matchLastLine('^    .+')){
+                $(evt.target).insertAtCaret('\n    ');
+                evt.preventDefault();
+            }
+
+            if ($(evt.target).matchLastLine('[=-]+')){
+                $(evt.target).insertAtCaret('\n');
+            }
+        }
+
     }
+
 });
 
 Template.detail.converter = new Showdown.converter({ extensions: ['rezepte'] });
 
 Template.detail.parse = function() {
     var r = Rezepte.findOne( Session.get('rezept_id') );
-    if (r.text){
+    if (r && r.text){
         return Template.detail.converter.makeHtml(r.text || '');
     } else {
-        Session.set('editing', true);
         return ''
     }
 }
 
-
-Template.detail.active = function() {
-    return Session.get('rezept_id');
-}
 
 Template.detail.editing = function() {
     return Session.get('editing');
@@ -181,4 +140,41 @@ Template.detail.editing = function() {
 
 Template.detail.rezept = function() {
     return Rezepte.findOne( Session.get('rezept_id') );
+}
+
+
+
+// Textarea Helpers
+$.fn.insertAtCaret = function(string) {
+	return this.each(function() {
+		var me = this;
+		if (document.selection) { // IE
+			me.focus();
+			sel = document.selection.createRange();
+			sel.text = string;
+			me.focus();
+		} else if (me.selectionStart || me.selectionStart == '0') { // Real browsers
+			var startPos = me.selectionStart, endPos = me.selectionEnd, scrollTop = me.scrollTop;
+			me.value = me.value.substring(0, startPos) + string + me.value.substring(endPos, me.value.length);
+			me.focus();
+			me.selectionStart = startPos + string.length;
+			me.selectionEnd = startPos + string.length;
+			me.scrollTop = scrollTop;
+		} else {
+			me.value += string;
+			me.focus();
+		}
+	});
+}
+
+$.fn.matchLastLine = function(pattern) {
+    // Geht im IE nicht. Mir egal!
+    pattern = new RegExp(pattern);
+    var me = this[0]
+    if (me.selectionStart || me.selectionStart == '0') {
+        start = me.value.lastIndexOf('\n', me.selectionStart-1);
+        var line = me.value.substring(start+1, me.selectionStart);
+        return line.match(pattern);
+    }
+    return false;
 }

@@ -19,36 +19,57 @@
 
 <template name="rezepte">
     {{#if loading}}
-    Une minute...
+    <br /><br />...
     {{else}}
     <ul>
-        <input type="text" id="new-rezept" placeholder="Neu…" />
     {{#each rezepte}}
         <li class="click">{{name}}</li>
     {{/each}}
+        <li class="click" id="new-rezept">Neu…</li>
     </ul>
     {{/if}}
 </template>
 
-<template name="zutaten">
-    <ul>
-        <input type="text" id="new-zutat" placeholder="Neu…" />
-    {{#each zutaten}}
-        <li class="click">{{name}}</li>
-    {{/each}}
-    </ul>
-</template>
-
 <template name="detail">
     <div>
-    {{#if active}}
+    {{#if loading}}
+    ...
+    {{else}}
         {{#if editing}}
-            <textarea id="editor">{{ rezept.text }}</textarea>
+            <div class="spick">
+            <h2>Spickzettel</h2>
+            <pre>
+Rezepttitel
+===========
+
+Das eigentliche Rezept
+----------------------
+
+    1 Zutat
+    1 andere Zutat
+
+1. Waschen
+2. Hacken
+3. Braten 
+
+Absatz mit Leerzeile abtrennen.
+Ein [Link](https://de.wikipedia.org/
+wiki/Markdown).
+
+Sonstiges
+---------
+
+Schlagworte mit #:
+#vegi schnell
+
+Kommentare und Varianten zu 
+Rezepten mit Tilde kennzeichnen ~mr
+            </pre>
+            </div>
+            <textarea id="editor" autofocus>{{ rezept.text }}</textarea>
         {{else}}
             {{{ parse }}}
         {{/if}}
-    {{else}}
-    (nichts ausgewählt)
     {{/if}}
     </div>
 </template>
