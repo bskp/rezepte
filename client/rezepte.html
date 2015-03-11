@@ -38,32 +38,34 @@
         {{#if editing}}
             <div class="spick">
             <h2>Spickzettel</h2>
-            <pre>
+            <pre>Speichern: Rechtsklick auf Text!
+
 Rezepttitel
 ===========
 
-Das eigentliche Rezept
-----------------------
+Untertitel
+----------
 
-    1 Zutat
-    1 andere Zutat
+    2 kg Zutat A
+    1 EL Zutat B
+    1 Prise Zutat C (und so weiter)
 
-1. Waschen
-2. Hacken
-3. Braten 
+1. Dies ist
+2. Eine Liste
+3. Von Arbeitsschritten
 
-Absatz mit Leerzeile abtrennen.
-Ein [Link](https://de.wikipedia.org/
+Aber das Rezept kann natürlich auch
+einfach als Textblock (so wie der hier)
+beschrieben werden.
+
+Man kann auch Links einfügen, z.B.
+so: [Linktitel](https://de.wikipedia.org/
 wiki/Markdown).
 
-Sonstiges
----------
+#Schlagwort_1 #Schlagwort_2
+#Schlagwort_3 ...
 
-Schlagworte mit #:
-#vegi schnell
-
-Kommentare und Varianten zu 
-Rezepten mit Tilde kennzeichnen ~mr
+Dies ist ein Kommentar von jemandem ~xy
             </pre>
             </div>
             <textarea id="editor" autofocus>{{ rezept.text }}</textarea>

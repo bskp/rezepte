@@ -47,11 +47,16 @@
             });
         }
 
+        // Inline: Strikethrough
+        il_del = function(text){
+            return text.replace(/~T~T(.*?)~T~T/g, '<del>$1</del>');
+        }
+
         // Inline: ingredient
         il_ingredient = function(text){
             // Every noun is treated as an ingredient, if not matched by the
             // following expression:
-            var no_ingredient = /Zweig|Zehe|Hand|Prise|Essl|Bund|Stange|P[äa]ck|Fl[aä]sch|EL|TL|D[öo]s/;
+            var no_ingredient = /Zweig|Zehe|Stück|Bl[aä]tt|Hand|Prise|Essl|Bund|Stange|P[äa]ck|Fl[aä]sch|EL|TL|D[öo]s/;
             return text.replace(/[A-ZÄÖÜ][a-zäöü]+/g, function(noun){
                 if (noun.match(no_ingredient)){
                     return noun;
@@ -125,6 +130,10 @@
 
 
         return [
+        {
+            type: 'lang',
+            filter: il_del
+        },
         {
             type: 'lang',
             filter: il_comments
