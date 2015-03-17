@@ -127,6 +127,33 @@ Template.detail.events({
         }
 
     },
+    'mousedown .ingredients b': function(evt, tmpl) {
+        var me = $(evt.target);
+        me.data('oldVal', eval(me.text()));
+        me.focus();
+        me.selectText();
+        evt.preventDefault();
+    },
+    'keydown .ingredients b': function(evt, tmpl) {
+        if (evt.keyCode == 13){
+            $(evt.target).trigger('blur');
+            evt.preventDefault();
+        }
+    },
+    'blur .ingredients b': function(evt, tmpl) {
+        var me = $(evt.target);
+        var ratio = eval(me.text()) / me.data('oldVal');
+
+
+        $('.ingredients b').each(function(){
+            var b = $(this)
+            b.addClass('dirty');
+            if (b[0] == me[0]) return
+            amount = (ratio * eval(b.text()));
+            b.text( +amount.toFixed(2) );
+        });
+    }
+
     /*
     'mouseenter .ingredients i': function(evt, tmpl) {
         $('#content strong').each( function(){
@@ -202,3 +229,19 @@ $.fn.matchLastLine = function(pattern) {
     }
     return false;
 }
+
+jQuery.fn.selectText = function(){
+   var doc = document;
+   var element = this[0];
+   if (doc.body.createTextRange) {
+       var range = document.body.createTextRange();
+       range.moveToElementText(element);
+       range.select();
+   } else if (window.getSelection) {
+       var selection = window.getSelection();        
+       var range = document.createRange();
+       range.selectNodeContents(element);
+       selection.removeAllRanges();
+       selection.addRange(range);
+   }
+};

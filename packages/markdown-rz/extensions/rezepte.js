@@ -67,7 +67,7 @@
 
         // Inline: Quantity
         il_quantity = function(text){
-            return text.replace(/((\d\/)?\d+)/g, '<b>$1</b>');
+            return text.replace(/((\d\/)?\d+)/g, '<b contenteditable="true">$1</b>');
         }
 
         // Block: Ingredient list

@@ -58,10 +58,11 @@ aside{
 
 #suchtext{
     margin-top: 0.5em;
+    margin-left: -0.3em;
     width: 94%;
     background-color: #666;
     border-radius: 0.3em;
-    padding: 0.2em 0.5em 0;
+    padding: 0.2em 0.3em 0;
 }
 
 #content{
@@ -83,6 +84,9 @@ aside{
         border-radius: 8px;
     }
 
+    .dirty{
+        color: #c50409;
+    }
 
     .spick {
         font-family: pica;
@@ -103,13 +107,17 @@ aside{
         height: 800px;
     }
 
-    p, ol{
+    p, ol, ul{
         padding-left: 0;
         margin-top: 0;
 
         li { margin-bottom: 0.5em; }
     }
 
+    ul{
+        list-style: none;
+    }
+    
     a{
         color: #000;
     }
