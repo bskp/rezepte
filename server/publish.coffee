@@ -17,3 +17,7 @@ Zutaten -- {name: String,
 Zutaten = new Mongo.Collection 'zutaten'
 Meteor.publish 'zutaten', -> Zutaten.find()
 @Zutaten = Zutaten
+
+appDump.allow = ->
+    # no auth requred
+    return true

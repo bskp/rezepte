@@ -11,83 +11,89 @@ var rezepteHandle = Meteor.subscribe('rezepte', function(){
 });
 var zutatHandle = Meteor.subscribe('zutaten');
 
-
 Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
 Session.setDefault('editing', false);
 
-////////// Suche //////////
 
-Template.suche.events({
-    'keyup #suchtext': function (evt) {
-        Session.set('filter', evt.target.value)
-    }
-});
+////////// List //////////
 
-
-////////// Rezepte //////////
-
-Template.rezepte.events({
-  'mousedown li': function (evt) { // change current
+Template.list.events({
+  'keyup #suchtext': function (evt) {
+      Session.set('filter', evt.target.value)
+  },
+  'click li': function (evt) { // change current
     var r = Rezepte.findOne( Session.get('rezept_id') );
 
     Session.set('editing', false);
     Session.set('rezept_id', this._id);
+
+    $('aside#list').removeClass('active');
   },
-  'mousedown #new-rezept': function (evt) {
+  'click #new-rezept': function (evt) {
     var curr = Rezepte.insert({
         name: 'Neues Rezept',
         text: void_template,
     });
     Session.set('rezept_id', curr);
     Session.set('editing', true);
+  },
+  'click #activate_btn': function (evt) {
+      $('aside#list').addClass('active');
   }
 });
 
-Template.rezepte.loading = function() {
-    return !rezepteHandle.ready();
-}
+Template.list.helpers({
+    loading: function() {
+        return !rezepteHandle.ready();
+    },
+    rezepte: function() {
+        // Determine recipes to display
+        var all = Rezepte.find({}, {sort: {name: 1}})
+        var query = Session.get('filter') ? Session.get('filter').toLowerCase() : '';
 
-Template.rezepte.rezepte = function() {
-    // Determine recipes to display
-    var all = Rezepte.find({}, {sort: {name: 1}})
-    var query = Session.get('filter') ? Session.get('filter').toLowerCase() : '';
-
-    if (query){
-        var filtered = [];
-        all.map( function(rezept){
-            if (rezept.name.toLowerCase().search(query) >= 0){
-                filtered.push(rezept);
-            }
-            /*
-            if ('tags' in rezept && (rezept.tags.indexOf(query) >= 0)){
-                filtered.push(rezept);
-            }
-            */
-            if ('ingr' in rezept && (rezept.ingr.indexOf(query) >= 0)){
-                filtered.push(rezept);
-            }
-        });
-        return filtered;
-    } else {
-        return all;
+        if (query){
+            var filtered = [];
+            all.map( function(rezept){
+                if (rezept.name.toLowerCase().search(query) >= 0){
+                    filtered.push(rezept);
+                }
+                /*
+                if ('tags' in rezept && (rezept.tags.indexOf(query) >= 0)){
+                    filtered.push(rezept);
+                }
+                */
+                if ('ingr' in rezept && (rezept.ingr.indexOf(query) >= 0)){
+                    filtered.push(rezept);
+                }
+            });
+            return filtered;
+        } else {
+            return all;
+        }
     }
-}
+})
 
 
 ////////// Detail //////////
 Template.detail.events({
-    'mousedown': function(evt) {
-        if (evt.button!=2){ return } // right-click only
+    // Start editing
+    'contextmenu, click .start_edit': function(evt) {
         Session.set('editing', true);
+        evt.preventDefault();
     },
-    'contextmenu': function(evt) { evt.preventDefault(); },
-    'mousedown #editor': function(evt, tmpl) {
-        if (evt.button!=2){ return } // right-click only
+    
+    // Save recipe
+    'contextmenu #editor, click .stop_edit': function(evt, tmpl) {
 
         var r = Rezepte.findOne( Session.get('rezept_id') );
-        r.text = tmpl.find('textarea').value;
+        text = tmpl.find('#editor').innerHTML;
+        // Ugly way to decode entities:
+        tarea = document.createElement("textarea");
+        tarea.innerHTML = text;
+        r.text = tarea.value;
 
+        // Delete recipe if text is empty
         if (!r.text){  
             Rezepte.remove(r._id);
             Session.set('rezept_id', Rezepte.findOne({}, {sort: {name:1}}));
@@ -98,36 +104,47 @@ Template.detail.events({
         var html = $(Template.detail.converter.makeHtml(r.text || ''));
 
         // TODO update ingredient list!
-
         r.name = html.filter('h1').text();
         r.tags = _.map(html.children('.tag'), function(tag){ return tag.innerHTML } )
         r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
 
         Rezepte.update(r._id, r);
         Session.set('editing', false);
+
+        evt.preventDefault();
     },
+
+    // Editor helpers
     'keydown #editor': function(evt, tmpl) {
-        if (evt.keyCode == 9){
+        if (evt.keyCode == 9){  // Tab
             evt.preventDefault();
-            $(evt.target).insertAtCaret('    ');
+            insertAtCaret('    ');
         }
-        if (evt.keyCode == 13){
-            if ($(evt.target).matchLastLine('^    .+')){
-                $(evt.target).insertAtCaret('\n    ');
-                evt.preventDefault();
+        if (evt.keyCode == 13){  // Enter
+            evt.preventDefault();
+
+            if (matchLastLine('^    .+')){
+                insertAtCaret('\n    ');
+                return
             }
 
-            if ($(evt.target).matchLastLine('^[=-]+')){
-                $(evt.target).insertAtCaret('\n');
+            if (matchLastLine('^[=-]+$')){
+                insertAtCaret('\n\n');
+                return
             }
+
+            insertAtCaret('\n');
+
         }
-        if (evt.keyCode == 27){
+        if (evt.keyCode == 27){  // Escape
             Session.set('editing', false);
             evt.preventDefault();
         }
 
     },
-    'mousedown .ingredients b': function(evt, tmpl) {
+
+    // Change quantities
+    'click .ingredients b': function(evt, tmpl) {
         var me = $(evt.target);
         me.data('oldVal', eval(me.text()));
         me.focus();
@@ -143,6 +160,7 @@ Template.detail.events({
     'blur .ingredients b': function(evt, tmpl) {
         var me = $(evt.target);
         var ratio = eval(me.text()) / me.data('oldVal');
+        if (ratio == 1) return
 
 
         $('.ingredients b').each(function(){
@@ -175,73 +193,52 @@ Template.detail.events({
 
 Template.detail.converter = new Showdown.converter({ extensions: ['rezepte'] });
 
-Template.detail.parse = function() {
-    var r = Rezepte.findOne( Session.get('rezept_id') );
-    if (r && r.text){
-        return Template.detail.converter.makeHtml(r.text || '');
-    } else {
-        return ''
+Template.detail.helpers({
+    parse: function() {
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+        if (r && r.text){
+            var html = Template.detail.converter.makeHtml(r.text || '');
+            return html;
+        } else {
+            return '';
+        }
+    },
+
+    editing: function() {
+        return Session.get('editing');
+    },
+
+    rezept: function() {
+        return Rezepte.findOne( Session.get('rezept_id') );
+    },
+})
+
+
+// ContentEditable Helpers
+insertAtCaret = function (text) {
+    var sel, range;
+    sel = window.getSelection();
+    if (sel.getRangeAt && sel.rangeCount) {
+        range = sel.getRangeAt(0);
+        range.deleteContents();
+        newTextNode = document.createTextNode(text);
+        range.insertNode( newTextNode );
+        range.setStartAfter( newTextNode );
+        sel.removeAllRanges();
+        sel.addRange(range);
     }
+
+    sel.anchorNode.normalize();
 }
 
-
-Template.detail.editing = function() {
-    return Session.get('editing');
-}
-
-Template.detail.rezept = function() {
-    return Rezepte.findOne( Session.get('rezept_id') );
-}
-
-
-
-// Textarea Helpers
-$.fn.insertAtCaret = function(string) {
-	return this.each(function() {
-		var me = this;
-		if (document.selection) { // IE
-			me.focus();
-			sel = document.selection.createRange();
-			sel.text = string;
-			me.focus();
-		} else if (me.selectionStart || me.selectionStart == '0') { // Real browsers
-			var startPos = me.selectionStart, endPos = me.selectionEnd, scrollTop = me.scrollTop;
-			me.value = me.value.substring(0, startPos) + string + me.value.substring(endPos, me.value.length);
-			me.focus();
-			me.selectionStart = startPos + string.length;
-			me.selectionEnd = startPos + string.length;
-			me.scrollTop = scrollTop;
-		} else {
-			me.value += string;
-			me.focus();
-		}
-	});
-}
-
-$.fn.matchLastLine = function(pattern) {
-    // Geht im IE nicht. Mir egal!
+matchLastLine = function(pattern){
     pattern = new RegExp(pattern);
-    var me = this[0]
-    if (me.selectionStart || me.selectionStart == '0') {
-        start = me.value.lastIndexOf('\n', me.selectionStart-1);
-        var line = me.value.substring(start+1, me.selectionStart);
-        return line.match(pattern);
-    }
-    return false;
-}
 
-jQuery.fn.selectText = function(){
-   var doc = document;
-   var element = this[0];
-   if (doc.body.createTextRange) {
-       var range = document.body.createTextRange();
-       range.moveToElementText(element);
-       range.select();
-   } else if (window.getSelection) {
-       var selection = window.getSelection();        
-       var range = document.createRange();
-       range.selectNodeContents(element);
-       selection.removeAllRanges();
-       selection.addRange(range);
-   }
-};
+    var sel = document.getSelection();
+    var text = sel.anchorNode.textContent;
+    var caretPos = sel.anchorOffset;
+    var from = text.substring(0, caretPos).lastIndexOf('\n');
+    var line = text.substring(from+1, caretPos);
+
+    return line.match(pattern);
+}

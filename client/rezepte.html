@@ -1,23 +1,31 @@
 <head>
     <title>Rezepte</title>
+    <link rel="shortcut icon" href="icon_16.png"> 
+    <link rel="apple-touch-icon" sizes="76x76" href="icon_76.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icon_120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icon_152.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 </head>
 
 <body>
-  <aside id="rezepte">
-  {{> suche}}
-  {{> rezepte}}
+  <aside id="list">
+  {{> list}}
   </aside>
 
   <section id="content">
   {{> detail }}
   </section>
+
+  <section id="backup">
+  {{> appDumpUI}}
+  </section>
 </body>
 
-<template name="suche">
+<template name="list">
     <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
-</template>
-
-<template name="rezepte">
+    <div id="activate_btn">=</div>
     {{#if loading}}
     <br /><br />Lade Rezepte...
     {{else}}
@@ -31,11 +39,12 @@
 </template>
 
 <template name="detail">
-    <div>
+    <div id="container">
     {{#if loading}}
     ...
     {{else}}
         {{#if editing}}
+            <div id="edit_btn" class="stop_edit">[Abc]</div>
             <div class="spick">
             <h2>Spickzettel</h2>
             <pre>Speichern: Rechtsklick auf Text!
@@ -68,8 +77,9 @@ wiki/Markdown).
 Dies ist ein Kommentar von jemandem ~xy
             </pre>
             </div>
-            <textarea id="editor" autofocus>{{ rezept.text }}</textarea>
+            <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
         {{else}}
+            <div id="edit_btn" class="start_edit">[&amp;!#]</div>
             {{{ parse }}}
         {{/if}}
     {{/if}}
