@@ -7,7 +7,7 @@ Rezepte = new Mongo.Collection("rezepte");
 Zutaten = new Mongo.Collection("zutaten");
 
 var rezepteHandle = Meteor.subscribe('rezepte', function(){
-    Session.set('rezept_id', Rezepte.findOne({}, {sort: {name:1}}));
+    FlowRouter.reload()
 });
 var zutatHandle = Meteor.subscribe('zutaten');
 
@@ -16,27 +16,67 @@ Session.setDefault('rezept_id', null);
 Session.setDefault('editing', false);
 
 
+// Cloudinary config
+$.cloudinary.config({cloud_name: 'rezepte'});
+
+// Routes
+
+FlowRouter.route('/:name', {
+    name: 'view',
+    action: function(params) {
+        var r = Rezepte.findOne({url: params['name']});
+        if (r != undefined){
+            Session.set('rezept_id', r._id);
+            Session.set('editing', false);
+        } else {
+            console.log(params['name']+' is no known recipe!');
+        }
+    },
+});
+
+FlowRouter.route('/:name/edit', {
+    name: 'edit',
+    action: function(params) {
+        var r = Rezepte.findOne({url: params['name']});
+        if (r != undefined){
+            Session.set('rezept_id', r._id);
+            Session.set('editing', true);
+        } else {
+            console.log(params['name']+' is no known recipe!');
+        }
+    },
+});
+
+
+FlowRouter.route('/', {
+  name: 'home',
+  action: function(_params) {
+    start = Rezepte.findOne({}, {sort: {name:1}});
+    console.log('ui');
+    console.log(start);
+    if (start != undefined){
+        FlowRouter.go('view', {name: start.url});
+    }
+  }
+});
+
 ////////// List //////////
 
 Template.list.events({
   'keyup #suchtext': function (evt) {
       Session.set('filter', evt.target.value)
   },
-  'click li': function (evt) { // change current
-    var r = Rezepte.findOne( Session.get('rezept_id') );
-
-    Session.set('editing', false);
-    Session.set('rezept_id', this._id);
-
+  'click a': function (evt) { // change current
     $('aside#list').removeClass('active');
   },
   'click #new-rezept': function (evt) {
+    $('aside#list').removeClass('active');
     var curr = Rezepte.insert({
         name: 'Neues Rezept',
+        url: 'neues-rezept',
         text: void_template,
     });
-    Session.set('rezept_id', curr);
-    Session.set('editing', true);
+    FlowRouter.go('edit', {'name': 'neues-rezept'})
   },
   'click #activate_btn': function (evt) {
       $('aside#list').addClass('active');
@@ -71,7 +111,11 @@ Template.list.helpers({
         } else {
             return all;
         }
+    },
+    path: function() {
+        return FlowRouter.path('view', {'name': this.url});
     }
+
 })
 
 
@@ -79,7 +123,8 @@ Template.list.helpers({
 Template.detail.events({
     // Start editing
     'contextmenu, click .start_edit': function(evt) {
-        Session.set('editing', true);
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+        FlowRouter.go('edit', {'name': r.url})
         evt.preventDefault();
     },
     
@@ -94,10 +139,9 @@ Template.detail.events({
         r.text = tarea.value;
 
         // Delete recipe if text is empty
-        if (!r.text){  
+        if (!r.text || r.text.length < 3){  
             Rezepte.remove(r._id);
-            Session.set('rezept_id', Rezepte.findOne({}, {sort: {name:1}}));
-            Session.set('editing', false);
+            FlowRouter.go('home')
             return
         }
 
@@ -105,11 +149,12 @@ Template.detail.events({
 
         // TODO update ingredient list!
         r.name = html.filter('h1').text();
+        r.url = URLify2( r.name );
         r.tags = _.map(html.children('.tag'), function(tag){ return tag.innerHTML } )
         r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
 
         Rezepte.update(r._id, r);
-        Session.set('editing', false);
+        FlowRouter.go('view', {'name': r.url})
 
         evt.preventDefault();
     },
@@ -170,7 +215,29 @@ Template.detail.events({
             amount = (ratio * eval(b.text()));
             b.text( +amount.toFixed(2) );
         });
-    }
+    },
+    /*
+    'mouseenter i': function(evt, tmpl) {
+        var needle = evt.target.innerHTML;
+        var exp = new RegExp(needle+'(?!</i>)');
+        $('#content li, #content p').each(function() {
+            var me = $(this);
+            me.html( me.html().replace(exp,'<i>'+needle+'</i>') );
+        });
+        $('i').removeClass('on');
+        $('i').each(function() {
+            var me = $(this);
+            if (me.text() == needle){
+                me.addClass('on');
+            }
+        });
+    },
+    'mouseleave i': function(evt, tmpl) {
+        $('i').removeClass('on');
+    },
+    */
+
+
 
     /*
     'mouseenter .ingredients i': function(evt, tmpl) {
