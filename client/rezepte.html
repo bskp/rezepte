@@ -80,6 +80,7 @@ Dies ist ein Kommentar von jemandem ~xy
             <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
         {{else}}
             <div id="edit_btn" class="start_edit">[&amp;!#]</div>
+            <canvas id="tags" width="400" height="400"> {{{ tags }}} </canvas>
             {{{ parse }}}
         {{/if}}
     {{/if}}

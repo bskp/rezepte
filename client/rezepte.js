@@ -34,6 +34,7 @@ FlowRouter.route('/:name', {
     },
 });
 
+/*
 FlowRouter.route('/:name/edit', {
     name: 'edit',
     action: function(params) {
@@ -46,6 +47,7 @@ FlowRouter.route('/:name/edit', {
         }
     },
 });
+*/
 
 
 FlowRouter.route('/', {
@@ -76,7 +78,8 @@ Template.list.events({
         url: 'neues-rezept',
         text: void_template,
     });
-    FlowRouter.go('edit', {'name': 'neues-rezept'})
+    FlowRouter.go('view', {'name': 'neues-rezept'})
+    Session.set('editing', true);
   },
   'click #activate_btn': function (evt) {
       $('aside#list').addClass('active');
@@ -124,13 +127,13 @@ Template.detail.events({
     // Start editing
     'contextmenu, click .start_edit': function(evt) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
-        FlowRouter.go('edit', {'name': r.url})
+        FlowRouter.go('view', {'name': r.url})
+        Session.set('editing', true);
         evt.preventDefault();
     },
     
     // Save recipe
     'contextmenu #editor, click .stop_edit': function(evt, tmpl) {
-
         var r = Rezepte.findOne( Session.get('rezept_id') );
         text = tmpl.find('#editor').innerHTML;
         // Ugly way to decode entities:
@@ -278,11 +281,17 @@ Template.detail.helpers({
     rezept: function() {
         return Rezepte.findOne( Session.get('rezept_id') );
     },
+
+    tags: function() {
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+        update_tags(r.tags);
+        return r.tags;
+    },
 })
 
 
 // ContentEditable Helpers
-insertAtCaret = function (text) {
+insertAtCaret = function(text) {
     var sel, range;
     sel = window.getSelection();
     if (sel.getRangeAt && sel.rangeCount) {
@@ -308,4 +317,53 @@ matchLastLine = function(pattern){
     var line = text.substring(from+1, caretPos);
 
     return line.match(pattern);
+}
+
+
+
+
+// Canvas helpers
+
+
+update_tags = function(tags) {
+  var canvas = document.getElementById('tags');
+  var ctx = canvas.getContext('2d');
+  
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.lineWidth = 10;
+
+  for (i in tags) {
+    console.log(tags[i]);
+    ctx.strokeStyle = getRndColor();
+    var x0 = canvas.width - 60 * (1 + parseInt(i));
+    ctx.beginPath();
+    ctx.moveTo(x0, -5);
+    var x_ = x0 + (Math.random() - 0.5) * 100;
+    var l = 70 + Math.random() * 50;
+    var n = 0;
+    for (var j=0; j<2; j++) {
+      var dx = (Math.random() - 0.5) * 50;
+      ctx.quadraticCurveTo(x_, n * l + l/2, x_ + dx, n * l + l)
+      n++;
+      x_ = x_ + 2 * dx;
+    }
+    ctx.globalCompositeOperation = "multiply";
+    ctx.stroke();
+    
+    var x = x_-dx;
+    var y = n*l;
+    ctx.translate(x, y);
+    ctx.rotate( Math.atan2(-1.8*dx, l) - Math.PI/2 );
+    ctx.fillStyle = '#fff';
+    
+    ctx.font = "12px DIN";
+    ctx.globalCompositeOperation = "normal";
+    ctx.fillText(tags[i].toUpperCase(), 4, 4)
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+}
+getRndColor = function() {
+    var h = 360*Math.random()|0;
+    return 'hsla(' + h +',100%,30%,1.0)';
 }
