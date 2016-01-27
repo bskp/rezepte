@@ -152,7 +152,7 @@ aside{
         max-width: 100%;
     }
 
-    .tag{ display: none; }
+    //.tag{ display: none; }
 
     table{
         font-size: 0.9em;
@@ -195,13 +195,31 @@ ul.ingredients{
     padding-left: 10px;
 }
 
+#tags{
+    display: none;
+}
 
-canvas#tags{
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 400px;
+#taglist{
+    position: fixed;
+    bottom: 0;
+
+    li a{
+        display: inline-block;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.9em;
+
+        padding-left: 5em;
+        margin-left: -5em;
+        border-radius: 2px;
+        margin-top: 2px;
+        line-height: 1.4em;
+        padding-right: 0.3em;
+
+        &.active{
+            background-color: red;
+        }
+    }
 }
 
 

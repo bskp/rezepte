@@ -5,11 +5,13 @@ var void_template = '#outdoorküche #vegi\n\nEin Beispielrezept! Der Weg ist das
 // Define Minimongo collections to match server/publish.js.
 Rezepte = new Mongo.Collection("rezepte");
 Zutaten = new Mongo.Collection("zutaten");
+Tags = new Mongo.Collection("tags");
 
 var rezepteHandle = Meteor.subscribe('rezepte', function(){
     FlowRouter.reload()
 });
 var zutatHandle = Meteor.subscribe('zutaten');
+var tagHandle = Meteor.subscribe('tags');
 
 Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
@@ -33,22 +35,6 @@ FlowRouter.route('/:name', {
         }
     },
 });
-
-/*
-FlowRouter.route('/:name/edit', {
-    name: 'edit',
-    action: function(params) {
-        var r = Rezepte.findOne({url: params['name']});
-        if (r != undefined){
-            Session.set('rezept_id', r._id);
-            Session.set('editing', true);
-        } else {
-            console.log(params['name']+' is no known recipe!');
-        }
-    },
-});
-*/
-
 
 FlowRouter.route('/', {
   name: 'home',
@@ -115,6 +101,9 @@ Template.list.helpers({
             return all;
         }
     },
+    tags: function() {
+        return Tags.find({}, {sort: {name: 1}});
+    },
     path: function() {
         return FlowRouter.path('view', {'name': this.url});
     }
@@ -150,14 +139,16 @@ Template.detail.events({
 
         var html = $(Template.detail.converter.makeHtml(r.text || ''));
 
-        // TODO update ingredient list!
         r.name = html.filter('h1').text();
         r.url = URLify2( r.name );
-        r.tags = _.map(html.children('.tag'), function(tag){ return tag.innerHTML } )
+        r.tags = _.map(html.children('#tags li'), function(tag){ return tag.innerHTML } )
         r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
 
+        // Update tag index
+        Meteor.call('updateTags', r._id, r.tags);
+
         Rezepte.update(r._id, r);
-        FlowRouter.go('view', {'name': r.url})
+        Session.set('editing', false);
 
         evt.preventDefault();
     },
@@ -284,7 +275,6 @@ Template.detail.helpers({
 
     tags: function() {
         var r = Rezepte.findOne( Session.get('rezept_id') );
-        update_tags(r.tags);
         return r.tags;
     },
 })
@@ -317,53 +307,4 @@ matchLastLine = function(pattern){
     var line = text.substring(from+1, caretPos);
 
     return line.match(pattern);
-}
-
-
-
-
-// Canvas helpers
-
-
-update_tags = function(tags) {
-  var canvas = document.getElementById('tags');
-  var ctx = canvas.getContext('2d');
-  
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.lineWidth = 10;
-
-  for (i in tags) {
-    console.log(tags[i]);
-    ctx.strokeStyle = getRndColor();
-    var x0 = canvas.width - 60 * (1 + parseInt(i));
-    ctx.beginPath();
-    ctx.moveTo(x0, -5);
-    var x_ = x0 + (Math.random() - 0.5) * 100;
-    var l = 70 + Math.random() * 50;
-    var n = 0;
-    for (var j=0; j<2; j++) {
-      var dx = (Math.random() - 0.5) * 50;
-      ctx.quadraticCurveTo(x_, n * l + l/2, x_ + dx, n * l + l)
-      n++;
-      x_ = x_ + 2 * dx;
-    }
-    ctx.globalCompositeOperation = "multiply";
-    ctx.stroke();
-    
-    var x = x_-dx;
-    var y = n*l;
-    ctx.translate(x, y);
-    ctx.rotate( Math.atan2(-1.8*dx, l) - Math.PI/2 );
-    ctx.fillStyle = '#fff';
-    
-    ctx.font = "12px DIN";
-    ctx.globalCompositeOperation = "normal";
-    ctx.fillText(tags[i].toUpperCase(), 4, 4)
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }
-}
-getRndColor = function() {
-    var h = 360*Math.random()|0;
-    return 'hsla(' + h +',100%,30%,1.0)';
 }

@@ -36,6 +36,19 @@
 
         // Inline: tags
         il_tags = function(text){
+            tags = text.match(/\s#(\S*)/g);
+            text = text.replace(/\s#(\S*)/g, '');
+            if (tags){
+                text += '\n<ul id="tags">';
+                tags.forEach(function(tag){
+                    text += '<li>'+tag.substr(2)+'</li>';
+                });
+                text += '</ul>';
+            }
+            return text;
+        }
+
+        il_tags_alt = function(text){
             return text.replace(/\n#(.*)/g, function(_, tags){
                 var tags = tags.split(', ');
                 var out = '';

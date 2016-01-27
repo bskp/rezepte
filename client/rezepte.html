@@ -35,6 +35,11 @@
     {{/each}}
         <li class="click" id="new-rezept">Neu…</li>
     </ul>
+    <ul id="taglist">
+    {{#each tags}}
+        <li class="click"><a href="">{{name}}</a></li>
+    {{/each}}
+    </ul>
     {{/if}}
 </template>
 
@@ -80,7 +85,6 @@ Dies ist ein Kommentar von jemandem ~xy
             <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
         {{else}}
             <div id="edit_btn" class="start_edit">[&amp;!#]</div>
-            <canvas id="tags" width="400" height="400"> {{{ tags }}} </canvas>
             {{{ parse }}}
         {{/if}}
     {{/if}}
