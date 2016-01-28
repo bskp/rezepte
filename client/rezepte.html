@@ -29,18 +29,24 @@
     {{#if loading}}
     <br /><br />Lade Rezepte...
     {{else}}
-    <ul>
+    <ul id="rezepte">
     {{#each rezepte}}
         <a class="click" href="{{path}}">{{name}}</a>
     {{/each}}
         <li class="click" id="new-rezept">Neu…</li>
     </ul>
-    <ul id="taglist">
-    {{#each tags}}
-        <li class="click"><a href="">{{name}}</a></li>
-    {{/each}}
-    </ul>
     {{/if}}
+    <ul id="taglist">
+    {{#if tags_ready}}
+    {{#each tags}}
+        {{#if active}}
+        <li class="click"><a class="active" href="" style="background-color: {{color}};">{{name}}</a></li>
+        {{else}}
+        <li class="click"><a href="">{{name}}</a></li>
+        {{/if}}
+    {{/each}}
+    {{/if}}
+    </ul>
 </template>
 
 <template name="detail">

@@ -54,8 +54,17 @@ Template.list.events({
   'keyup #suchtext': function (evt) {
       Session.set('filter', evt.target.value)
   },
-  'click a': function (evt) { // change current
+  'click #rezepte a': function (evt) { // change current recipe
     $('aside#list').removeClass('active');
+  },
+  'click #taglist a': function (evt, tmpl) {
+      var search = tmpl.find('#suchtext');
+      var tag = ' #' + evt.target.innerHTML;
+      if (search.value.match(tag)){
+          search.value = search.value.replace(tag, '');
+      } else {
+          search.value += tag;
+      }
   },
   'click #new-rezept': function (evt) {
     $('aside#list').removeClass('active');
@@ -101,9 +110,24 @@ Template.list.helpers({
             return all;
         }
     },
-    tags: function() {
-        return Tags.find({}, {sort: {name: 1}});
+    tags_ready: function() {
+        return tagHandle.ready();
     },
+    tags: function() {
+        var tags = Tags.find({}, {sort: {name: 1}}).fetch();
+        for (tag of tags){
+            // Computed property "active"
+            if (tag.rezept.indexOf( Session.get('rezept_id') ) == -1){
+                tag.active = false;
+            } else {
+                tag.active = true;
+            }
+            // Computed property "color"
+            tag.color = 'hsl(' + tag.name.hashCode() + ',30%,50%)';
+        }
+        return tags
+    },
+
     path: function() {
         return FlowRouter.path('view', {'name': this.url});
     }
@@ -130,22 +154,22 @@ Template.detail.events({
         tarea.innerHTML = text;
         r.text = tarea.value;
 
+        var html = $(Template.detail.converter.makeHtml(r.text || ''));
+
+        r.name = html.filter('h1').text();
+        r.url = URLify2( r.name );
+        tags = _.map(html.children('#tags li'), function(tag){ return tag.innerHTML } )
+        r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
+
+        // Update tag index
+        Meteor.call('updateTags', r._id, tags);
+
         // Delete recipe if text is empty
         if (!r.text || r.text.length < 3){  
             Rezepte.remove(r._id);
             FlowRouter.go('home')
             return
         }
-
-        var html = $(Template.detail.converter.makeHtml(r.text || ''));
-
-        r.name = html.filter('h1').text();
-        r.url = URLify2( r.name );
-        r.tags = _.map(html.children('#tags li'), function(tag){ return tag.innerHTML } )
-        r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
-
-        // Update tag index
-        Meteor.call('updateTags', r._id, r.tags);
 
         Rezepte.update(r._id, r);
         Session.set('editing', false);
@@ -272,12 +296,21 @@ Template.detail.helpers({
     rezept: function() {
         return Rezepte.findOne( Session.get('rezept_id') );
     },
-
-    tags: function() {
-        var r = Rezepte.findOne( Session.get('rezept_id') );
-        return r.tags;
-    },
 })
+
+
+// Prototype extensions
+String.prototype.hashCode = function(){
+    // From http://werxltd.com
+	var hash = 0;
+	if (this.length == 0) return hash;
+	for (i = 0; i < this.length; i++) {
+		char = this.charCodeAt(i);
+		hash = ((hash<<5)-hash)+char;
+		hash = hash & hash; // Convert to 32bit integer
+	}
+	return hash;
+}
 
 
 // ContentEditable Helpers
