@@ -1,0 +1,30 @@
+# Meteor packages used by this project, one per line.
+#
+# 'meteor add' and 'meteor remove' will edit this file for you,
+# but you can also edit it by hand.
+
+insecure
+coffeescript
+less
+markdown-rz
+hitchcott:app-dump
+accounts-base
+fastclick
+kadira:flow-router
+lepozepo:cloudinary
+altapp:urlify2-minifiable
+standard-minifiers
+meteor-base
+mobile-experience
+mongo
+blaze-html-templates
+session
+jquery
+tracker
+logging
+reload
+random
+ejson
+spacebars
+check
+perak:fuzzy-search
