@@ -6,6 +6,9 @@
 // Dimensions
 @margin: 350px;
 @gutter: 80px;
+@activate_col: 30px;
+@list_std: 270px;
+@list_touch: 380px;
 
 // Fixes
 
@@ -36,13 +39,13 @@ aside{
     position: absolute;
     top: 0;
 
-    font: 0.5em/1.3em 'DIN', Helvetica, Arial, sans-serif;
+    font: 0.5em 'DIN', Helvetica, Arial, sans-serif;
     // TODO proper font-download!
 
-
-    width: 220px;
+    width: @list_std;
+    right: 0;
     
-    padding: 0 1em;
+    padding: 0.5em 1em;
     min-height: 100%;
 
     ul{
@@ -50,50 +53,97 @@ aside{
         padding: 0;
     }
 
-    right: 0;
-    &#zutaten{
-        left: 0;
-        text-align: right;
+    li a{
+        display: inline-block;
+        padding-top: 0.3em;
+        padding-bottom: 0.2em;
+        text-decoration: none;
+
+        &:hover{
+            text-decoration: none;
+        }
     }
 
-}
+    #suchtext{
+        margin-left: -0.3em;
+        margin-right: -2em;
+        background-color: #666;
+        border-radius: 0.3em;
+        padding: 0.2em 0.3em 0;
+        width: 100%;
+        line-height: 1.6em;
+    }
+    #clear_filter{
+        display: inline-block;
+        background-color: #949494;
+        text-decoration: none;
+        font-size: 1.35em;
+        width: 1em;
+        height: 1em;
+        line-height: 1.05em;
+        /* baseline-shift: -0.6em; */
+        border-radius: 1em;
+        text-align: center;
+        color: rgb(93, 93, 93);
+        margin-right: -1em;
+    }
 
-#suchtext{
-    margin-top: 0.5em;
-    margin-left: -0.3em;
-    width: 80%;
-    background-color: #666;
-    border-radius: 0.3em;
-    padding: 0.2em 0.3em 0;
-}
+    ul#taglist{
+        position: absolute;
 
-#edit_btn{
-    position: fixed;
-    left: 0.5em;
-    bottom: 0.5em;
-    z-index: 5;
-    cursor: pointer;
-    font-family: 'DIN', Helvetica, Arial, sans-serif;
-}
+        li a{
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 0.9em;
 
-#activate_btn{
-    display: none;
-    position: fixed;
-    z-index: 10;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 25px;
-    cursor: pointer;
-    text-align: center;
-}
+            padding-left: 5em;
+            margin-left: -5em;
+            margin-bottom: 0.1em;
+            border-radius: 2px;
+            padding-right: 0.3em;
+
+            &.active{
+                background-color: hsl(0, 0%, 50%);
+            }
+
+            &:hover:before{
+                content: '#';
+                position: absolute;
+                left: -0.8em;
+            }
+        }
+    } // taglist
+
+    ul#rezepte{
+        position: absolute;
+        width: 66%;
+        right: 0;
+
+        li a{
+            display: block;
+            border-bottom: 1px solid #999;
+            padding-left: 0.05em;
+
+            &:hover{
+                background-color: #555;
+            }
+
+            &.active{
+                background-color: #222;
+            }
+        }
+    }
+
+} // aside
 
 #content{
     position: absolute;
-    right: 250px;
+    right: @list_std + 30px;
     left: 0;
     top: 0;
     min-height: 100%;
+
+    overflow: hidden;
 
     padding: 1em 2em;
     padding-left: @margin;
@@ -105,6 +155,10 @@ aside{
         font-weight: normal;
         background-color: yellow;
         border-radius: 8px;
+    }
+
+    a {
+        text-decoration: underline;
     }
 
     .dirty{
@@ -152,7 +206,9 @@ aside{
         max-width: 100%;
     }
 
-    //.tag{ display: none; }
+    #tags{
+        display: none;
+    }
 
     table{
         font-size: 0.9em;
@@ -189,38 +245,11 @@ ul.ingredients{
     font-size: 0.9em;
 
     width: @margin - @gutter - 10px;
-    position: absolute;
-    left: 0;
-    margin-top: 0;
+    float: left;
+    margin-left: -@margin;
     padding-left: 10px;
 }
 
-#tags{
-    display: none;
-}
-
-#taglist{
-    position: fixed;
-    bottom: 0;
-
-    li a{
-        display: inline-block;
-        text-transform: uppercase;
-        font-weight: bold;
-        font-size: 0.9em;
-
-        padding-left: 5em;
-        margin-left: -5em;
-        border-radius: 2px;
-        margin-top: 2px;
-        line-height: 1.4em;
-        padding-right: 0.3em;
-
-        &.active{
-            background-color: red;
-        }
-    }
-}
 
 
 #backup{
@@ -282,64 +311,82 @@ i.on{
 }
 
 
-.click{
-    cursor: pointer;
-    display: block;
-
-    &:hover{
-        text-decoration: underline;
-    }
-
-}
-
 a {
     color: inherit;
-    text-decoration: inherit;
 }
 
-@media (max-device-width: 1024px) {
+#mode_flip{
+    display: none;
+}
+
+@media (max-width: 1024px) {
 
     body{ font-size: 20px; }
 
-    //  Menu ausblenden
-    #content{
-        right: 25px;
-    }
 
     aside{
         cursor: pointer;
-        font-size: 20px;
-        width: 350px;
+        font-size: 18px;
+        width: @list_touch;
 
-        #activate_btn{ display: block; }
     }
 
-    aside.active{
-        z-index: 1;
-        min-height: 100%;
-
-        #activate_btn{ display: none; }
+    #content{
+        transition: left 0.2s, right 0.2s, background-color 0.2s;
     }
 
+    #mode_flip{
+        transition: background-color 0.2s;
+
+        display: block;
+        position: fixed;
+        z-index: 10;
+        top: 0;
+        bottom: 0;
+        cursor: pointer;
+    }
+
+    body {
+        #content{
+            right: @activate_col;
+            background-color: #fff;
+        }
+
+        #mode_flip{
+            right: 0;
+            width: @activate_col;
+        }
+    }
+        
+
+    body.offset{ 
+        #content{
+            right: @list_touch + 45px;
+            left: -@list_touch;
+            background-color: #aaa;
+        }
+
+        #mode_flip{
+            right: @list_touch + 45px;
+            left: 0;
+            width: auto;
+        }
+    }
 
 
 }
 
 
-@media (max-device-width: 750px) {
-
-    // Menu maximimieren, wenn eingeblendet
-    aside.active{
-        left: 0;
-        width: auto;
-    }
+@media (max-width: 750px) {
 
     //  Zutaten-Spalte in Haupttextfluss aufnehmen
     #content{
         padding-left: 50px;
 
         ul.ingredients{
-            position: relative;
+            float: none;
+            position: initial;
+            margin-left: 0;
             text-align: left;
             padding-left: 1em;
 
@@ -355,9 +402,31 @@ a {
 }
 
 
-@media (max-device-width: 500px) {
+@media (max-width: 500px) {
 
-    body{ font-size: 15px; }
+    body{ 
+        font-size: 15px;
+    }
+
+    aside{
+        font-size: 15px;
+        width: 250px;
+        
+    }
+
+    body.offset{ 
+        #content{
+            right: 280px;
+            left: -280px;
+            background-color: #aaa;
+        }
+
+        #mode_flip{
+            right: 280px;
+            left: 0;
+            width: auto;
+        }
+    }
 
 }
 

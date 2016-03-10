@@ -25,26 +25,35 @@
 
 <template name="list">
     <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
-    <div id="activate_btn">=</div>
-    {{#if loading}}
-    <br /><br />Lade Rezepte...
-    {{else}}
-    <ul id="rezepte">
-    {{#each rezepte}}
-        <a class="click" href="{{path}}">{{name}}</a>
-    {{/each}}
-        <li class="click" id="new-rezept">Neu…</li>
-    </ul>
-    {{/if}}
+    <a href="" id="clear_filter">×</a>
+    <div id="mode_flip"> </div>
     <ul id="taglist">
     {{#if tags_ready}}
     {{#each tags}}
         {{#if active}}
-        <li class="click"><a class="active" href="" style="background-color: {{color}};">{{name}}</a></li>
+        <li><a class="active" href="" style="background-color: {{color}};">{{name}}</a></li>
         {{else}}
-        <li class="click"><a href="">{{name}}</a></li>
+        <li><a href="">{{name}}</a></li>
         {{/if}}
     {{/each}}
+    {{/if}}
+    </ul>
+    <ul id="rezepte">
+    {{#if loading}}
+    Lade Rezepte...
+    {{else}}
+    {{#each rezepte}}
+        <li>
+            {{#if is_active _id }}
+            <a class="active" href="{{path}}">{{name}}</a>
+            {{else}}
+            <a href="{{path}}">{{name}}</a>
+            {{/if}}
+        </li>
+    {{/each}}
+        <li>
+            <a href="" id="new-rezept">Neu…</a>
+        </li>
     {{/if}}
     </ul>
 </template>
@@ -55,7 +64,6 @@
     ...
     {{else}}
         {{#if editing}}
-            <div id="edit_btn" class="stop_edit">[Abc]</div>
             <div class="spick">
             <h2>Spickzettel</h2>
             <pre>Speichern: Rechtsklick auf Text!
@@ -90,7 +98,6 @@ Dies ist ein Kommentar von jemandem ~xy
             </div>
             <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
         {{else}}
-            <div id="edit_btn" class="start_edit">[&amp;!#]</div>
             {{{ parse }}}
         {{/if}}
     {{/if}}

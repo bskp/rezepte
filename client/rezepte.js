@@ -17,6 +17,19 @@ Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
 Session.setDefault('editing', false);
 
+var ingrCache = [];
+Tracker.autorun(function () {
+    // Provide a ingredients cache for autocompletion
+    if (rezepteHandle.ready()){
+        ingrCache = _.uniq(Rezepte.find({}, {
+                sort: {ingr: 1}, fields: {ingr: true}
+            }).fetch().map(function(r) {
+                return r.ingr;
+            }), true);
+        ingrCache = _.flatten(ingrCache);
+    }
+});
+
 
 // Cloudinary config
 $.cloudinary.config({cloud_name: 'rezepte'});
@@ -30,6 +43,7 @@ FlowRouter.route('/:name', {
         if (r != undefined){
             Session.set('rezept_id', r._id);
             Session.set('editing', false);
+            document.title = 'Rezepte | ' + r.name;
         } else {
             console.log(params['name']+' is no known recipe!');
         }
@@ -42,32 +56,45 @@ FlowRouter.route('/', {
     start = Rezepte.findOne({}, {sort: {name:1}});
     console.log('ui');
     console.log(start);
-    if (start != undefined){
+    if (start != undefined && start.url != ''){
         FlowRouter.go('view', {name: start.url});
     }
   }
 });
 
+
+
 ////////// List //////////
 
 Template.list.events({
-  'keyup #suchtext': function (evt) {
-      Session.set('filter', evt.target.value)
+  'keydown #suchtext': function (evt) {
+        if (evt.keyCode == 27){  // Escape
+            evt.target.value = '';
+            evt.preventDefault();
+        }
   },
-  'click #rezepte a': function (evt) { // change current recipe
-    $('aside#list').removeClass('active');
+  'keyup #suchtext': function (evt) {
+        Session.set('filter', evt.target.value)
+        /*
+        var typing = evt.target.value.match(/[^ ]*$/)[0];
+        if (typing.length){
+            
+        }
+        */
   },
   'click #taglist a': function (evt, tmpl) {
       var search = tmpl.find('#suchtext');
-      var tag = ' #' + evt.target.innerHTML;
+      var tag = '#' + evt.target.innerHTML +' ';
       if (search.value.match(tag)){
           search.value = search.value.replace(tag, '');
       } else {
-          search.value += tag;
+          search.value += ' ' + tag + ' ';
       }
+      search.value = search.value.replace(/  +/g, ' ');
+      if (search.value == ' ') search.value = '';
+      Session.set('filter', search.value)
   },
   'click #new-rezept': function (evt) {
-    $('aside#list').removeClass('active');
     var curr = Rezepte.insert({
         name: 'Neues Rezept',
         url: 'neues-rezept',
@@ -76,8 +103,12 @@ Template.list.events({
     FlowRouter.go('view', {'name': 'neues-rezept'})
     Session.set('editing', true);
   },
-  'click #activate_btn': function (evt) {
-      $('aside#list').addClass('active');
+  'click #mode_flip': function (evt) {
+      $('body').toggleClass('offset');
+  },
+  'click #clear_filter': function(evt, tmpl) {
+    Session.set('filter', '');
+    tmpl.find('#suchtext').value = '';
   }
 });
 
@@ -87,35 +118,36 @@ Template.list.helpers({
     },
     rezepte: function() {
         // Determine recipes to display
-        var all = Rezepte.find({}, {sort: {name: 1}})
         var query = Session.get('filter') ? Session.get('filter').toLowerCase() : '';
 
-        if (query){
-            var filtered = [];
-            all.map( function(rezept){
-                if (rezept.name.toLowerCase().search(query) >= 0){
-                    filtered.push(rezept);
-                }
-                /*
-                if ('tags' in rezept && (rezept.tags.indexOf(query) >= 0)){
-                    filtered.push(rezept);
-                }
-                */
-                if ('ingr' in rezept && (rezept.ingr.indexOf(query) >= 0)){
-                    filtered.push(rezept);
-                }
-            });
-            return filtered;
-        } else {
-            return all;
+        // Matching ingredient
+        re_tags = /(?:^| )#([^ ]+)(?= |$)/g;
+        re_ingr = /(?:^| )([^# ]+)(?= |$)/g;
+
+        filter = {};
+
+        var tags = query.mapMatch(re_tags, function(m){ return m[1] });
+        if (tags.length){
+            $.extend(filter, {'tags': {$all: tags}});
         }
+
+        var ingr = query.mapMatch(re_ingr, function(m){ return m[1] });
+        if (ingr.length){
+            $.extend(filter, {'ingr': {$all: ingr}});
+        }
+        
+        return Rezepte.find(filter, {sort: {name: 1}});
+    },
+    is_active: function(rid) {
+        return rid == Session.get('rezept_id');
     },
     tags_ready: function() {
         return tagHandle.ready();
     },
     tags: function() {
         var tags = Tags.find({}, {sort: {name: 1}}).fetch();
-        for (tag of tags){
+        for (tag in tags){
+            tag = tags[tag];
             // Computed property "active"
             if (tag.rezept.indexOf( Session.get('rezept_id') ) == -1){
                 tag.active = false;
@@ -158,11 +190,11 @@ Template.detail.events({
 
         r.name = html.filter('h1').text();
         r.url = URLify2( r.name );
-        tags = _.map(html.children('#tags li'), function(tag){ return tag.innerHTML } )
+        r.tags = _.map(html.children('#tags li'), function(tag){ return tag.innerHTML } )
         r.ingr = _.map(html.filter('ul').find('li i'), function(ingr){ return ingr.innerHTML.toLowerCase() } )
 
         // Update tag index
-        Meteor.call('updateTags', r._id, tags);
+        Meteor.call('updateTags', r._id, r.tags);
 
         // Delete recipe if text is empty
         if (!r.text || r.text.length < 3){  
@@ -310,6 +342,17 @@ String.prototype.hashCode = function(){
 		hash = hash & hash; // Convert to 32bit integer
 	}
 	return hash;
+}
+
+
+String.prototype.mapMatch = function(re, callback){
+    var match = re.exec(this);
+    var ret = [];
+    while (match != null) {
+        ret.push( callback(match) );
+        match = re.exec(this);
+    }
+    return ret;
 }
 
 
