@@ -64,9 +64,16 @@
     ...
     {{else}}
         {{#if editing}}
-            <div class="spick">
-            <h2>Spickzettel</h2>
-            <pre>Speichern: Rechtsklick auf Text!
+            <div class="left">
+                <input type="file" id="filepicker" accept="image/*" multiple="true" />
+                <ul id="images">
+                    {{#each images}}
+                    <img src="{{ thumb }}" data-label="{{ label }}" draggable="true" />
+                    {{/each}}
+                </ul>
+
+                <h2>Spickzettel</h2>
+                <pre>Speichern: Rechtsklick auf Text!
 
 Rezepttitel
 ===========

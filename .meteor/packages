@@ -11,9 +11,7 @@ hitchcott:app-dump
 accounts-base
 fastclick
 kadira:flow-router
-lepozepo:cloudinary
 altapp:urlify2-minifiable
-standard-minifiers
 meteor-base
 mobile-experience
 mongo
@@ -28,3 +26,9 @@ ejson
 spacebars
 check
 perak:fuzzy-search
+cfs:standard-packages
+cfs:gridfs
+cfs:graphicsmagick
+standard-minifier-css
+standard-minifier-js
+meteorhacks:picker

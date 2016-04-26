@@ -1,10 +1,8 @@
-Rezepte = new Mongo.Collection('rezepte')
-Zutaten = new Mongo.Collection('zutaten')
-Tags = new Mongo.Collection('tags')
-
 Meteor.publish('rezepte', function() { return Rezepte.find(); });
 Meteor.publish('zutaten', function() { return Zutaten.find(); });
 Meteor.publish('tags', function() { return Tags.find(); });
+
+Meteor.publish('images', function(){ return Images.find({}); });
 
 
 Meteor.methods({
@@ -28,24 +26,35 @@ Meteor.methods({
 });
 
 
-
 /*
-  addBook: function(title, author) {
-    check(title, String); //check if title is String
-    check(author, String); //check if author is String
+Picker.route(':name/bilder/:img', function(params, req, res, next) {
+    var r = Rezepte.findOne({url: params.name});
+    var img_id = r && r.images && r.images[ params.img ];
+    var img = img_id && Images.findOne( img_id );
 
-    if (title === '') {
-      throw new Meteor.Error(500, "Parameter title can't be empty");
+    if ( img ){
+        var stream = img.createReadStream('full');
+
+        res.writeHeader(200, {
+            'Content-Type': img.original.type
+        });
+
+        stream.on('open', function () {
+            stream.pipe(res);
+        });
+
+        stream.on('error', function(err) {
+            res.end(err);
+        });
+
+        stream.on('end', function() {
+            res.end();
+        });
+
+    } else {
+        res.writeHeader(404);
+        res.end();
     }
-
-    if (author === '') {
-      throw new Meteor.Error(500, "Parameter author can't be empty");
-    }
-
-    Books.insert({
-      title: title,
-      author: author
-    });
-  }
 });
+
 */

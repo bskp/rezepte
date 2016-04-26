@@ -2,16 +2,12 @@
 
 var void_template = '#outdoorküche #vegi\n\nEin Beispielrezept! Der Weg ist das Ziel ~\n\nSandkuchen à la Bruno\n=====================\n\nFür 2 Personen, ca. 20 min.\n\n    2 Blätter Löwenzahn\n    1 kg Sand, grobkörnig\n    1 l Wasser, brackig\n    10 Margeritenköpfe\n\n1. In einem Kessel Wasser abmessen, Sand sorgfältig einrieseln lassen und während 15 min kräftig umrühren.\n2. Kessel herumzeigen. Margeriten beifügen und mit Löwenzahn abschmecken.\n\nIch nehme jeweils Sand, der von Katzen als Klo benutzt wurde. Gibt einfach das vollere Aroma ~mr\n';
 
-// Define Minimongo collections to match server/publish.js.
-Rezepte = new Mongo.Collection("rezepte");
-Zutaten = new Mongo.Collection("zutaten");
-Tags = new Mongo.Collection("tags");
-
 var rezepteHandle = Meteor.subscribe('rezepte', function(){
     FlowRouter.reload()
 });
 var zutatHandle = Meteor.subscribe('zutaten');
 var tagHandle = Meteor.subscribe('tags');
+Meteor.subscribe('images');
 
 Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
@@ -31,18 +27,17 @@ Tracker.autorun(function () {
 });
 
 
-// Cloudinary config
-$.cloudinary.config({cloud_name: 'rezepte'});
 
 // Routes
+
 
 FlowRouter.route('/:name', {
     name: 'view',
     action: function(params) {
         var r = Rezepte.findOne({url: params['name']});
         if (r != undefined){
-            Session.set('rezept_id', r._id);
             Session.set('editing', false);
+            Session.set('rezept_id', r._id);
             document.title = 'Rezepte | ' + r.name;
         } else {
             console.log(params['name']+' is no known recipe!');
@@ -54,14 +49,11 @@ FlowRouter.route('/', {
   name: 'home',
   action: function(_params) {
     start = Rezepte.findOne({}, {sort: {name:1}});
-    console.log('ui');
-    console.log(start);
     if (start != undefined && start.url != ''){
         FlowRouter.go('view', {name: start.url});
     }
   }
 });
-
 
 
 ////////// List //////////
@@ -238,6 +230,56 @@ Template.detail.events({
 
     },
 
+    // Image insertion
+    'change #filepicker': function(evt, tmpl) {
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+
+        FS.Utility.eachFile(evt, function(file) {
+            Images.insert(file, function (err, fileObj) {
+                label = fileObj.original.name.split('.')[0];
+                label = URLify2( label );
+
+                if (!r.images){
+                    r.images = {};
+                }
+                r.images[label] = fileObj._id;
+                Rezepte.update(r._id, r);
+            });
+        });
+        evt.target.value = '';
+    },
+
+    'dragstart img': function(evt, tmpl) {
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+        var tag = '![](' + r.url + '/img/' + this.label + ')\n';
+
+        evt.originalEvent.dataTransfer.clearData();
+        evt.originalEvent.dataTransfer.setData('text/plain', tag);
+        evt.originalEvent.dataTransfer.effectAllowed = 'linkMove';
+
+        tmpl.$('#filepicker').addClass('trashy');
+    },
+
+    'dragend img': function(evt, tmpl) {
+        tmpl.$('#filepicker').removeClass('trashy');
+    },
+
+    'dragenter #filepicker': function(evt, tmpl) {
+        evt.preventDefault();
+    },
+
+    'dragover #filepicker': function(evt, tmpl) {
+        evt.preventDefault();
+    },
+
+    'drop #filepicker': function(evt, tmpl) {
+        evt.preventDefault();
+    },
+
+    'drop #editor': function(evt, tmpl) {
+        alert('asdf');
+    },
+
     // Change quantities
     'click .ingredients b': function(evt, tmpl) {
         var me = $(evt.target);
@@ -328,10 +370,32 @@ Template.detail.helpers({
     rezept: function() {
         return Rezepte.findOne( Session.get('rezept_id') );
     },
+
+
+    images: function() {
+        var r = Rezepte.findOne( Session.get('rezept_id') );
+        if (!r.images){
+            return null
+        }
+        ret = [];
+        for (label in r.images){
+            image = Images.findOne( r.images[label] );
+            if (!image){
+                console.log('Bild nicht in Datenbank.');
+                console.log(label);
+                break;
+            }
+            ret.push( {'label': label,
+                       'thumb': image.url({store: 'thumb'}),
+                       'full': image.url({store: 'full'}),
+            });
+        }
+        return ret
+    },
 })
 
 
-// Prototype extensions
+// Monkey patching
 String.prototype.hashCode = function(){
     // From http://werxltd.com
 	var hash = 0;

@@ -165,13 +165,24 @@ aside{
         color: #c50409;
     }
 
-    .spick {
+    .left {
         font-family: pica;
         position: fixed;
         left: 1em;
         top: 5em;
         font-size: 0.5em;
         color: #999;
+
+        img{
+            display: list-item;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+            cursor: grab;
+
+            border-radius: 10px;
+            margin-bottom: 5px;
+        }
+
 
         pre{
             font-family: camingo;
@@ -236,6 +247,18 @@ aside{
     }
 }
 
+input#filepicker{
+    padding: 50px 0;
+    border-radius: 10px;
+    border: 2px dashed;
+    text-align: center;
+    width: 100%;
+
+    transition: 1s;
+    &.trashy{
+        background-color: red;
+    }
+}
 
 ul.ingredients{
     list-style-type: none;
@@ -398,7 +421,7 @@ a {
         content: none;
     }
 
-    .spick{ display: none; }
+    .left{ display: none; }
 }
 
 
