@@ -251,33 +251,60 @@ Template.detail.events({
 
     'dragstart img': function(evt, tmpl) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
-        var tag = '![](' + r.url + '/img/' + this.label + ')\n';
+        var tag = '![](' + r.url + '/img/' + this.label + ')';
 
         evt.originalEvent.dataTransfer.clearData();
         evt.originalEvent.dataTransfer.setData('text/plain', tag);
+        evt.originalEvent.dataTransfer.setData('text/x-img-label', this.label);
         evt.originalEvent.dataTransfer.effectAllowed = 'linkMove';
-
-        tmpl.$('#filepicker').addClass('trashy');
     },
 
     'dragend img': function(evt, tmpl) {
-        tmpl.$('#filepicker').removeClass('trashy');
     },
 
-    'dragenter #filepicker': function(evt, tmpl) {
+    'dragenter #dropzone': function(evt, tmpl) {
         evt.preventDefault();
     },
 
-    'dragover #filepicker': function(evt, tmpl) {
+    'dragover #dropzone': function(evt, tmpl) {
         evt.preventDefault();
     },
 
-    'drop #filepicker': function(evt, tmpl) {
-        evt.preventDefault();
-    },
+    'drop #dropzone': function(evt, tmpl) {
+        var dT = evt.originalEvent.dataTransfer;
+        var r = Rezepte.findOne( Session.get('rezept_id') );
 
-    'drop #editor': function(evt, tmpl) {
-        alert('asdf');
+        // File was dropped
+        if (dT.files.length){
+            FS.Utility.eachFile(evt, function(file) {
+                Images.insert(file, function (err, fileObj) {
+                    label = fileObj.original.name.split('.')[0];
+                    label = URLify2( label );
+
+                    if (!r.images){
+                        r.images = {};
+                    }
+                    r.images[label] = fileObj._id;
+                    Rezepte.update(r._id, r);
+                });
+            });
+            evt.preventDefault();
+            return
+        }
+        
+        // Image-Node was dropped
+        var label = dT.getData('text/x-img-label');
+        if ( label ){
+            var img_id = r.images[ label ];
+            delete r.images[ label ];
+
+            Rezepte.update(r._id, r);
+            Images.remove( img_id );
+
+            evt.preventDefault();
+        }
+
+        return true
     },
 
     // Change quantities

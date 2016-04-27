@@ -65,12 +65,13 @@
     {{else}}
         {{#if editing}}
             <div class="left">
-                <input type="file" id="filepicker" accept="image/*" multiple="true" />
                 <ul id="images">
                     {{#each images}}
                     <img src="{{ thumb }}" data-label="{{ label }}" draggable="true" />
                     {{/each}}
                 </ul>
+
+                <div id="dropzone">Bild hinzufügen</div>
 
                 <h2>Spickzettel</h2>
                 <pre>Speichern: Rechtsklick auf Text!

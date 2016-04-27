@@ -169,18 +169,28 @@ aside{
         font-family: pica;
         position: fixed;
         left: 1em;
-        top: 5em;
+        top: 0;
         font-size: 0.5em;
         color: #999;
 
         img{
-            display: list-item;
+            border-radius: 10px;
+            height: 100px;
+            width: 300px;
+            height: 150px;
+            background-color: #ddd;
+            background-image: url('spinner.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+
+            display: block;
+
+            border-radius: 10px;
+            margin-top: 5px;
+
             cursor: -moz-grab;
             cursor: -webkit-grab;
             cursor: grab;
-
-            border-radius: 10px;
-            margin-bottom: 5px;
         }
 
 
@@ -247,17 +257,13 @@ aside{
     }
 }
 
-input#filepicker{
-    padding: 50px 0;
+#dropzone{
+    font: 1em 'DIN', Helvetica, Arial, sans-serif;
+    padding: 60px 0;
     border-radius: 10px;
     border: 2px dashed;
     text-align: center;
-    width: 100%;
-
-    transition: 1s;
-    &.trashy{
-        background-color: red;
-    }
+    width: 300px - 4px;
 }
 
 ul.ingredients{

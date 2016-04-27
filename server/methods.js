@@ -25,9 +25,7 @@ Meteor.methods({
     }
 });
 
-
-/*
-Picker.route(':name/bilder/:img', function(params, req, res, next) {
+Picker.route('/:name/img/:img', function(params, req, res, next) {
     var r = Rezepte.findOne({url: params.name});
     var img_id = r && r.images && r.images[ params.img ];
     var img = img_id && Images.findOne( img_id );
@@ -57,4 +55,3 @@ Picker.route(':name/bilder/:img', function(params, req, res, next) {
     }
 });
 
-*/
