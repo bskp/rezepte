@@ -8,4 +8,4 @@ Features:
 - Print-like look and feel
 - Very little chrome
 
-Check out a running beta at [rezept.ee](rezept.ee)!
+Check out a running beta at [rezept.ee](http://rezept.ee)!
