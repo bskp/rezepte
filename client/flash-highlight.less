@@ -1,0 +1,28 @@
+@flash: rgba(0,0,0,0.2);
+
+.flash {
+  -moz-animation: flash 2s ease-out;
+  	-moz-animation-iteration-count: 1;
+  	-webkit-animation: flash 2s ease-out;
+  	-webkit-animation-iteration-count: 1;
+  	-ms-animation: flash 2s ease-out;
+  	-ms-animation-iteration-count: 1;
+  	animation: flash 1s ease-in-out;
+  	animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+@-webkit-keyframes flash {
+    0% { background-color: none; }
+    100% { background-color: @flash; }        
+}
+
+@-moz-keyframes flash {
+    0% { background-color: none; }
+    100% { background-color: @flash; }        
+}
+
+@-ms-keyframes flash {
+    0% { background-color: none; }
+    100% { background-color: @flash; }        
+}

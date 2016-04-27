@@ -257,13 +257,20 @@ Template.detail.events({
         evt.originalEvent.dataTransfer.setData('text/plain', tag);
         evt.originalEvent.dataTransfer.setData('text/x-img-label', this.label);
         evt.originalEvent.dataTransfer.effectAllowed = 'linkMove';
+
+        tmpl.find('#dropzone').classList.add('x');
     },
 
     'dragend img': function(evt, tmpl) {
+        tmpl.find('#dropzone').classList.remove('x');
     },
 
     'dragenter #dropzone': function(evt, tmpl) {
-        evt.preventDefault();
+        evt.target.classList.add('over');
+    },
+
+    'dragleave #dropzone': function(evt, tmpl) {
+        evt.target.classList.remove('over');
     },
 
     'dragover #dropzone': function(evt, tmpl) {
@@ -271,6 +278,11 @@ Template.detail.events({
     },
 
     'drop #dropzone': function(evt, tmpl) {
+
+        tmpl.find('#dropzone').classList.remove('x');
+        tmpl.find('#dropzone').classList.remove('flash');
+        evt.target.classList.remove('over');
+
         var dT = evt.originalEvent.dataTransfer;
         var r = Rezepte.findOne( Session.get('rezept_id') );
 
@@ -305,6 +317,18 @@ Template.detail.events({
         }
 
         return true
+    },
+
+    'drop #editor': function(evt, tmpl) {
+        var dT = evt.originalEvent.dataTransfer;
+        var label = dT.getData('text/x-img-label');
+
+        // Only accept uploaded images
+        if (!label){
+            evt.preventDefault();
+            alert('Füge Bilder hinzu, indem du sie auf die gestrichelte Zone links ziehst!');
+            tmpl.find('#dropzone').classList.add('flash');
+        }
     },
 
     // Change quantities
