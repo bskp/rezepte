@@ -5,9 +5,9 @@ var void_template = '#outdoorküche #vegi\n\nEin Beispielrezept! Der Weg ist das
 var rezepteHandle = Meteor.subscribe('rezepte', function(){
     FlowRouter.reload()
 });
-var zutatHandle = Meteor.subscribe('zutaten');
-var tagHandle = Meteor.subscribe('tags');
-Meteor.subscribe('images');
+var zutatenHandle = Meteor.subscribe('zutaten');
+var tagsHandle = Meteor.subscribe('tags');
+var imagesHandle = Meteor.subscribe('images');
 
 Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
@@ -134,7 +134,7 @@ Template.list.helpers({
         return rid == Session.get('rezept_id');
     },
     tags_ready: function() {
-        return tagHandle.ready();
+        return tagsHandle.ready();
     },
     tags: function() {
         var tags = Tags.find({}, {sort: {name: 1}}).fetch();
@@ -252,11 +252,12 @@ Template.detail.events({
     'dragstart img': function(evt, tmpl) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         var tag = '![](' + r.url + '/img/' + this.label + ')';
+        var dT = evt.originalEvent.dataTransfer;
 
-        evt.originalEvent.dataTransfer.clearData();
-        evt.originalEvent.dataTransfer.setData('text/plain', tag);
-        evt.originalEvent.dataTransfer.setData('text/x-img-label', this.label);
-        evt.originalEvent.dataTransfer.effectAllowed = 'linkMove';
+        dT.clearData();
+        dT.setData('text/plain', tag);
+        dT.setData('text/x-img-label', this.label);
+        dT.effectAllowed = 'linkMove';
 
         tmpl.find('#dropzone').classList.add('x');
     },
@@ -319,15 +320,27 @@ Template.detail.events({
         return true
     },
 
-    'drop #editor': function(evt, tmpl) {
-        var dT = evt.originalEvent.dataTransfer;
+    'drop #editor, paste #editor': function(evt, tmpl) {
+        var dT = evt.originalEvent.dataTransfer || evt.originalEvent.clipboardData;
         var label = dT.getData('text/x-img-label');
 
-        // Only accept uploaded images
-        if (!label){
+        // Handle dragging of already-uploaded images
+        if (label){
+            return;
+        }
+
+        // Advice user if files are dropped
+        if (dT.files.length){
             evt.preventDefault();
-            alert('Füge Bilder hinzu, indem du sie auf die gestrichelte Zone links ziehst!');
+            alert('Füge Bilder hinzu, indem du sie auf die gestrichelte Zone links ziehst.\nVon dort aus kannst du sie dann im Rezept platzieren!');
             tmpl.find('#dropzone').classList.add('flash');
+        }
+
+        // Conversion to plaintext
+        if (dT.types.indexOf('text/plain') != -1) {
+            var t = dT.getData('text/plain');
+            insertAtCaret( t );
+            evt.preventDefault();
         }
     },
 
@@ -404,6 +417,9 @@ Template.detail.events({
 Template.detail.converter = new Showdown.converter({ extensions: ['rezepte'] });
 
 Template.detail.helpers({
+    images_ready: function() {
+        return imagesHandle.ready();
+    },
     parse: function() {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         if (r && r.text){
@@ -432,6 +448,7 @@ Template.detail.helpers({
         for (label in r.images){
             image = Images.findOne( r.images[label] );
             if (!image){
+                debugger
                 console.log('Bild nicht in Datenbank.');
                 console.log(label);
                 break;

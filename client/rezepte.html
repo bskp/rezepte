@@ -60,21 +60,20 @@
 
 <template name="detail">
     <div id="container">
-    {{#if loading}}
-    ...
-    {{else}}
-        {{#if editing}}
-            <div class="left">
-                <ul id="images">
-                    {{#each images}}
-                    <img src="{{ thumb }}" data-label="{{ label }}" draggable="true" />
-                    {{/each}}
-                </ul>
+    {{#if editing}}
+        <div class="left">
+            {{#if images_ready}}
+            <ul id="images">
+                {{#each images}}
+                <img src="{{ thumb }}" data-label="{{ label }}" draggable="true" />
+                {{/each}}
+            </ul>
+            {{/if}}
 
-                <div id="dropzone"></div>
+            <div id="dropzone"></div>
 
-                <h2>Spickzettel</h2>
-                <pre>Speichern: Rechtsklick auf Text!
+            <h2>Spickzettel</h2>
+            <pre>Speichern: Rechtsklick auf Text!
 
 Rezepttitel
 ===========
@@ -102,12 +101,11 @@ wiki/Markdown).
 #Schlagwort_3 ...
 
 Dies ist ein Kommentar von jemandem ~xy
-            </pre>
-            </div>
-            <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
-        {{else}}
-            {{{ parse }}}
-        {{/if}}
+        </pre>
+        </div>
+        <pre id="editor" contentEditable="true" autofocus>{{ rezept.text }}</pre>
+    {{else}}
+        {{{ parse }}}
     {{/if}}
     </div>
 </template>
