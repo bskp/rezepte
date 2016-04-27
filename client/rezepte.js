@@ -65,27 +65,37 @@ Template.list.events({
             evt.preventDefault();
         }
   },
+
   'keyup #suchtext': function (evt) {
         Session.set('filter', evt.target.value)
-        /*
-        var typing = evt.target.value.match(/[^ ]*$/)[0];
-        if (typing.length){
-            
-        }
-        */
   },
+
   'click #taglist a': function (evt, tmpl) {
       var search = tmpl.find('#suchtext');
       var tag = '#' + evt.target.innerHTML +' ';
-      if (search.value.match(tag)){
-          search.value = search.value.replace(tag, '');
+
+      if (evt.altKey){
+          // retain current list of tags
+          if (search.value.match(tag)){
+              search.value = search.value.replace(tag, '');
+          } else {
+              search.value += ' ' + tag + ' ';
+          }
       } else {
-          search.value += ' ' + tag + ' ';
+          // replace current list of tags
+          if (search.value.match(tag)){
+              search.value = search.value.replace(/#\S+ /g, '');
+          } else {
+              search.value = search.value.replace(/#\S+ /g, '');
+              search.value += ' ' + tag + ' ';
+          }
       }
+
       search.value = search.value.replace(/  +/g, ' ');
       if (search.value == ' ') search.value = '';
       Session.set('filter', search.value)
   },
+
   'click #new-rezept': function (evt) {
     var curr = Rezepte.insert({
         name: 'Neues Rezept',
@@ -95,6 +105,7 @@ Template.list.events({
     FlowRouter.go('view', {'name': 'neues-rezept'})
     Session.set('editing', true);
   },
+
   'click #mode_flip': function (evt) {
       $('body').toggleClass('offset');
   },
@@ -162,7 +173,7 @@ Template.list.helpers({
 ////////// Detail //////////
 Template.detail.events({
     // Start editing
-    'contextmenu, click .start_edit': function(evt) {
+    'contextmenu': function(evt) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         FlowRouter.go('view', {'name': r.url})
         Session.set('editing', true);
@@ -170,7 +181,7 @@ Template.detail.events({
     },
     
     // Save recipe
-    'contextmenu #editor, click .stop_edit': function(evt, tmpl) {
+    'contextmenu #editor': function(evt, tmpl) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         text = tmpl.find('#editor').innerHTML;
         // Ugly way to decode entities:
@@ -231,24 +242,6 @@ Template.detail.events({
     },
 
     // Image insertion
-    'change #filepicker': function(evt, tmpl) {
-        var r = Rezepte.findOne( Session.get('rezept_id') );
-
-        FS.Utility.eachFile(evt, function(file) {
-            Images.insert(file, function (err, fileObj) {
-                label = fileObj.original.name.split('.')[0];
-                label = URLify2( label );
-
-                if (!r.images){
-                    r.images = {};
-                }
-                r.images[label] = fileObj._id;
-                Rezepte.update(r._id, r);
-            });
-        });
-        evt.target.value = '';
-    },
-
     'dragstart img': function(evt, tmpl) {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         var tag = '![](' + r.url + '/img/' + this.label + ')';
@@ -279,7 +272,6 @@ Template.detail.events({
     },
 
     'drop #dropzone': function(evt, tmpl) {
-
         tmpl.find('#dropzone').classList.remove('x');
         tmpl.find('#dropzone').classList.remove('flash');
         evt.target.classList.remove('over');
@@ -291,6 +283,7 @@ Template.detail.events({
         if (dT.files.length){
             FS.Utility.eachFile(evt, function(file) {
                 Images.insert(file, function (err, fileObj) {
+
                     label = fileObj.original.name.split('.')[0];
                     label = URLify2( label );
 
@@ -317,9 +310,10 @@ Template.detail.events({
             evt.preventDefault();
         }
 
-        return true
+        return true // fall back to the browser's default behaviour
     },
 
+    // Maintain plaintextyness of contentEditable
     'drop #editor, paste #editor': function(evt, tmpl) {
         var dT = evt.originalEvent.dataTransfer || evt.originalEvent.clipboardData;
         var label = dT.getData('text/x-img-label');
@@ -475,7 +469,6 @@ String.prototype.hashCode = function(){
 	}
 	return hash;
 }
-
 
 String.prototype.mapMatch = function(re, callback){
     var match = re.exec(this);
