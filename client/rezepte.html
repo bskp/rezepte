@@ -10,23 +10,18 @@
 </head>
 
 <body>
+  {{> detail }}
+
   <aside id="list">
   {{> list}}
   </aside>
 
-  <section id="content">
-  {{> detail }}
-  </section>
-
-  <section id="backup">
-  {{> appDumpUI}}
-  </section>
+  <div id="mode_flip"> </div>
 </body>
 
 <template name="list">
     <input type="text" id="suchtext" autocomplete="off" placeholder="Etwas kochen mit…" />
     <a href="" id="clear_filter">×</a>
-    <div id="mode_flip"> </div>
     <ul id="taglist">
     {{#if tags_ready}}
     {{#each tags}}
@@ -59,6 +54,7 @@
 </template>
 
 <template name="detail">
+  <section id="content">
     <div id="container">
     {{#if editing}}
         <div class="left">
@@ -108,4 +104,5 @@ Dies ist ein Kommentar von jemandem ~xy
         {{{ parse }}}
     {{/if}}
     </div>
+  </section>
 </template>

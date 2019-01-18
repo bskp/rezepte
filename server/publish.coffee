@@ -26,6 +26,3 @@ Meteor.publish 'tags', -> Tags.find()
 
 ###
 
-appDump.allow = ->
-    # no auth requred
-    return true

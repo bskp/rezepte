@@ -26,10 +26,19 @@ Tracker.autorun(function () {
     }
 });
 
+/*
+
+// Window width as reactive var
+var ww = new ReactiveVar( $(window).width() );
+window.onresize = _.debounce(function() {
+    ww.set( $(window).width() ); 
+}, 100);
+
+
+*/
 
 
 // Routes
-
 
 FlowRouter.route('/:name', {
     name: 'view',
@@ -54,6 +63,7 @@ FlowRouter.route('/', {
     }
   }
 });
+
 
 
 ////////// List //////////
@@ -123,7 +133,7 @@ Template.list.helpers({
         // Determine recipes to display
         var query = Session.get('filter') ? Session.get('filter').toLowerCase() : '';
 
-        // Matching ingredient
+        // Matching ingredient / tag
         re_tags = /(?:^| )#([^ ]+)(?= |$)/g;
         re_ingr = /(?:^| )([^# ]+)(?= |$)/g;
 
@@ -174,8 +184,6 @@ Template.list.helpers({
 Template.detail.events({
     // Start editing
     'contextmenu': function(evt) {
-        var r = Rezepte.findOne( Session.get('rezept_id') );
-        FlowRouter.go('view', {'name': r.url})
         Session.set('editing', true);
         evt.preventDefault();
     },

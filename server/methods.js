@@ -25,6 +25,7 @@ Meteor.methods({
     }
 });
 
+// Serve images from "pretty" urls
 Picker.route('/:name/img/:img', function(params, req, res, next) {
     var r = Rezepte.findOne({url: params.name});
     var img_id = r && r.images && r.images[ params.img ];

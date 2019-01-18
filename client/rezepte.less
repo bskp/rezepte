@@ -6,15 +6,14 @@
 // Dimensions
 @margin: 350px;
 @gutter: 80px;
-@activate_col: 30px;
+@activate_col: 18px;
 @list_std: 270px;
 @list_touch: 380px;
 
 // Fixes
 
-body{
-    margin: 0;
-    padding: 0;
+html{
+    height: 100%;
 }
 
 input, select, textarea{
@@ -29,24 +28,27 @@ input, select, textarea{
 // Layout
 
 body{
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    display: flex;
     background-color: @chrome;
 }
 
 
 aside{
-    background-color: @chrome;
     color: @sheet;
-    position: absolute;
-    top: 0;
+    z-index: 1;
+    flex-grow: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
 
     font: 0.5em 'DIN', Helvetica, Arial, sans-serif;
     // TODO proper font-download!
 
     width: @list_std;
-    right: 0;
     
     padding: 0.5em 1em;
-    min-height: 100%;
 
     ul{
         list-style-type: none;
@@ -115,10 +117,7 @@ aside{
     } // taglist
 
     ul#rezepte{
-        position: absolute;
-        width: 66%;
-        right: 0;
-
+        padding-left: 100px;
         li a{
             display: block;
             border-bottom: 1px solid #999;
@@ -137,19 +136,19 @@ aside{
 } // aside
 
 #content{
-    position: absolute;
-    right: @list_std + 30px;
-    left: 0;
-    top: 0;
+    position: relative;
+
     min-height: 100%;
-
-    overflow: hidden;
-
-    padding: 1em 2em;
+    width: 100%;
+    
+    padding: 1em 2em 5em;
     padding-left: @margin;
     
     background-color: @sheet;
     box-shadow: 0 0 20px;
+
+    z-index: 10;
+    overflow: hidden;
 
     strong {
         font-weight: normal;
@@ -204,12 +203,7 @@ aside{
         font-size: 16px;
         padding-bottom: 5em;
         min-height: 500px;
-
-        white-space: pre-wrap;       /* CSS 3 */
-        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-        white-space: -pre-wrap;      /* Opera 4-6 */
-        white-space: -o-pre-wrap;    /* Opera 7 */
-        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        white-space: pre-wrap;
     }
 
     p, ol, ul{
@@ -375,10 +369,80 @@ a {
 }
 
 #mode_flip{
-    display: none;
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: @list_std;
+    width: 30px;
+    z-index: 100;
+    cursor: pointer;
+}
+
+body.offset {
+    aside {
+        margin-left: -@list_touch+@activate_col;
+    }
+    #mode_flip {
+        right: 0;
+    }
 }
 
 @media (max-width: 1024px) {
+
+    body {
+        font-size: 20px;
+    }
+
+    aside {
+        cursor: pointer;
+        font-size: 18px;
+        width: @list_touch;
+        margin-left: -@list_touch+@activate_col;
+    }
+
+    body.offset {
+        #content {
+            margin-left: -@list_touch+@activate_col;
+        }
+
+        aside {
+            margin-left: 0;
+        }
+
+        #mode_flip {
+            right: @list_touch;
+            left: 0;
+        }
+    }
+
+}
+
+@media (max-width: 750px) {
+    //  Zutaten-Spalte in Haupttextfluss aufnehmen
+    #content{
+        padding-left: 50px;
+
+        ul.ingredients{
+            float: none;
+            position: initial;
+            margin-left: 0;
+            text-align: left;
+            padding-left: 1em;
+
+            li { margin-bottom: 0; }
+        }
+    }
+
+    h1::before{
+        content: none;
+    }
+
+    .left{ display: none; }
+}
+
+
+@media (max-width: 0px) {
 
     body{ font-size: 20px; }
 
@@ -399,7 +463,7 @@ a {
 
         display: block;
         position: fixed;
-        z-index: 10;
+        z-index: 20;
         top: 0;
         bottom: 0;
         cursor: pointer;
@@ -436,7 +500,7 @@ a {
 }
 
 
-@media (max-width: 750px) {
+@media (max-width: 0px) { //750
 
     //  Zutaten-Spalte in Haupttextfluss aufnehmen
     #content{
@@ -461,7 +525,7 @@ a {
 }
 
 
-@media (max-width: 500px) {
+@media (max-width: 0px) { // 500
 
     body{ 
         font-size: 15px;
@@ -488,6 +552,7 @@ a {
     }
 
 }
+
 
 
 @media print{
