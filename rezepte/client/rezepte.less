@@ -117,7 +117,7 @@ aside{
     } // taglist
 
     ul#rezepte{
-        padding-left: 100px;
+        padding-left: 7em;
         li a{
             display: block;
             border-bottom: 1px solid #999;
@@ -369,11 +369,11 @@ a {
 }
 
 #mode_flip{
-    display: block;
+    display: none;
     position: fixed;
     top: 0;
     bottom: 0;
-    right: @list_std;
+    right: 0;
     width: 30px;
     z-index: 100;
     cursor: pointer;
@@ -385,6 +385,9 @@ body.offset {
     }
     #mode_flip {
         right: 0;
+        left: 0;
+        width: auto;
+        background-color: fade(#444, 20%);
     }
 }
 
@@ -392,10 +395,13 @@ body.offset {
 
     body {
         font-size: 20px;
+
+        #mode_flip {
+            display: block;
+        }
     }
 
     aside {
-        cursor: pointer;
         font-size: 18px;
         width: @list_touch;
         margin-left: -@list_touch+@activate_col;
@@ -412,7 +418,6 @@ body.offset {
 
         #mode_flip {
             right: @list_touch;
-            left: 0;
         }
     }
 
@@ -441,119 +446,23 @@ body.offset {
     .left{ display: none; }
 }
 
-
-@media (max-width: 0px) {
-
-    body{ font-size: 20px; }
-
-
-    aside{
-        cursor: pointer;
-        font-size: 18px;
-        width: @list_touch;
-
+@media (max-width: (@list_touch - @activate_col)) {
+    aside {
+        font-size: 0.8em;
+        width: @list_std;
+        margin-left: -@list_std+@activate_col;
     }
 
-    #content{
-        transition: left 0.2s, right 0.2s, background-color 0.2s;
-    }
-
-    #mode_flip{
-        transition: background-color 0.2s;
-
-        display: block;
-        position: fixed;
-        z-index: 20;
-        top: 0;
-        bottom: 0;
-        cursor: pointer;
-    }
-
-    body {
-        #content{
-            right: @activate_col;
-            background-color: #fff;
+    body.offset {
+        #content {
+            margin-left: -@list_std+@activate_col;
         }
 
-        #mode_flip{
-            right: 0;
-            width: @activate_col;
+        #mode_flip {
+            right: @list_std;
         }
     }
-        
-
-    body.offset{ 
-        #content{
-            right: @list_touch + 45px;
-            left: -@list_touch;
-            background-color: #aaa;
-        }
-
-        #mode_flip{
-            right: @list_touch + 45px;
-            left: 0;
-            width: auto;
-        }
-    }
-
-
 }
-
-
-@media (max-width: 0px) { //750
-
-    //  Zutaten-Spalte in Haupttextfluss aufnehmen
-    #content{
-        padding-left: 50px;
-
-        ul.ingredients{
-            float: none;
-            position: initial;
-            margin-left: 0;
-            text-align: left;
-            padding-left: 1em;
-
-            li { margin-bottom: 0; }
-        }
-    }
-
-    h1::before{
-        content: none;
-    }
-
-    .left{ display: none; }
-}
-
-
-@media (max-width: 0px) { // 500
-
-    body{ 
-        font-size: 15px;
-    }
-
-    aside{
-        font-size: 15px;
-        width: 250px;
-        
-    }
-
-    body.offset{ 
-        #content{
-            right: 280px;
-            left: -280px;
-            background-color: #aaa;
-        }
-
-        #mode_flip{
-            right: 280px;
-            left: 0;
-            width: auto;
-        }
-    }
-
-}
-
-
 
 @media print{
     body{

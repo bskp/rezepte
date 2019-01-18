@@ -116,9 +116,6 @@ Template.list.events({
     Session.set('editing', true);
   },
 
-  'click #mode_flip': function (evt) {
-      $('body').toggleClass('offset');
-  },
   'click #clear_filter': function(evt, tmpl) {
     Session.set('filter', '');
     tmpl.find('#suchtext').value = '';
@@ -208,7 +205,7 @@ Template.detail.events({
         Meteor.call('updateTags', r._id, r.tags);
 
         // Delete recipe if text is empty
-        if (!r.text || r.text.length < 3){  
+        if (!r.text || r.text.length < 3 || r.text == '<br>'){  
             Rezepte.remove(r._id);
             FlowRouter.go('home')
             return
@@ -347,12 +344,9 @@ Template.detail.events({
     },
 
     // Change quantities
-    'click .ingredients b': function(evt, tmpl) {
+    'focus .ingredients b': function(evt, tmpl) {
         var me = $(evt.target);
-        me.data('oldVal', eval(me.text()));
-        me.focus();
-        me.selectText();
-        evt.preventDefault();
+        me.data('oldVal', parseHumanNumber(me.text()));
     },
     'keydown .ingredients b': function(evt, tmpl) {
         if (evt.keyCode == 13){
@@ -362,7 +356,8 @@ Template.detail.events({
     },
     'blur .ingredients b': function(evt, tmpl) {
         var me = $(evt.target);
-        var ratio = eval(me.text()) / me.data('oldVal');
+        var ratio = parseHumanNumber(me.text()) / me.data('oldVal');
+        me.text( printHumanNumber( parseHumanNumber(me.text()) ) );
         if (ratio == 1) return
 
 
@@ -370,8 +365,8 @@ Template.detail.events({
             var b = $(this)
             b.addClass('dirty');
             if (b[0] == me[0]) return
-            amount = (ratio * eval(b.text()));
-            b.text( +amount.toFixed(2) );
+            amount = (ratio * parseHumanNumber(b.text()));
+            b.text( printHumanNumber(amount) );
         });
     },
     /*
@@ -464,6 +459,11 @@ Template.detail.helpers({
     },
 })
 
+Template.body.events({
+  'click #mode_flip': function (evt) {
+      $('body').toggleClass('offset');
+  }
+});
 
 // Monkey patching
 String.prototype.hashCode = function(){
@@ -516,4 +516,68 @@ matchLastLine = function(pattern){
     var line = text.substring(from+1, caretPos);
 
     return line.match(pattern);
+}
+
+parseHumanNumber = function(text) {
+    text = text.replace(',', '.');
+
+    // Fraction glyphs
+    text = text.replace('½', ' 1/2');
+    text = text.replace('¼', ' 1/4');
+    text = text.replace('¾', ' 3/4');
+    text = text.replace('⅓', ' 1/3');
+    text = text.replace('⅔', ' 2/3');
+
+    // Leading integers
+    var chunks = text.trim().split(' ');
+    var intlead = 0;
+    if (chunks.length == 2) {
+        intlead = Number(chunks[0]);
+        text = chunks[1];
+    }
+
+    var numden = text.split('/');
+    var num = Number(numden[0]);
+    var den = Number(numden[1]);
+    
+    if (Number.isNaN(den)) den = 1.0;
+
+    return intlead + num/den;
+}
+
+printHumanNumber = function(number) {
+    if (Number.isInteger(number)) return String(number);
+
+    // Try to factorize with denominators from 2..4
+    var text;
+    for (var den = 2; den < 5; den++) {
+        var error = (number*den)%1.0;
+        if (error < 0.001) {
+            var num = Math.round(number*den);
+
+            // Fabricate leading integers
+            var intlead = ''
+            if (num > den) {
+                intlead = Math.floor(num/den);
+                num = num - intlead*den;
+            }
+            text = intlead + ' ' + num + '/' + den;
+            break;
+        }
+    }
+
+    if (text !== undefined) {
+        // Pretty fractions
+        text = text.replace(' 1/2', '½');
+        text = text.replace(' 1/4', '¼');
+        text = text.replace(' 3/4', '¾');
+        text = text.replace(' 1/3', '⅓');
+        text = text.replace(' 2/3', '⅔');
+
+    } else {
+        // No fraction found
+        text = number.toFixed(2);
+        text = text.replace('.', ',');
+    }
+    return text;
 }
