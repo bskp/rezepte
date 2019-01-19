@@ -104,13 +104,16 @@
 
 @font-face {
     font-family: 'double_pica';
-    src: url('imfedprm27c-webfont.woff') format('woff');
+    src: url('imfedprm27c-webfont.woff2') format('woff2'),
+         url('imfedprm27c-webfont.woff') format('woff');
+
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: 'double_pica';
-    src: url('imfedpit27c-webfont.woff') format('woff');
+    src: url('imfedpit27c-webfont.woff2') format('woff2'),
+         url('imfedpit27c-webfont.woff') format('woff');
     font-weight: normal;
     font-style: italic;
 }
@@ -118,13 +121,15 @@
 
 @font-face {
     font-family: 'pica';
-    src: url('imfepirm27c-webfont.woff') format('woff');
+    src: url('imfepirm27c-webfont.woff2') format('woff2'),
+         url('imfedirm27c-webfont.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: 'pica';
-    src: url('imfepiit27c-webfont.woff') format('woff');
+    src: url('imfepiit27c-webfont.woff2') format('woff2'),
+         url('imfediit27c-webfont.woff') format('woff');
     font-weight: normal;
     font-style: italic;
 }
