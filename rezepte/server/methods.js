@@ -4,7 +4,6 @@ Meteor.publish('tags', function() { return Tags.find(); });
 
 Meteor.publish('images', function(){ return Images.find({}); });
 
-
 Meteor.methods({
 
     updateTags: function(rezept_id, tags) {
@@ -32,23 +31,8 @@ Picker.route('/:name/img/:img', function(params, req, res, next) {
     var img = img_id && Images.findOne( img_id );
 
     if ( img ){
-        var stream = img.createReadStream('full');
-
-        res.writeHeader(200, {
-            'Content-Type': img.original.type
-        });
-
-        stream.on('open', function () {
-            stream.pipe(res);
-        });
-
-        stream.on('error', function(err) {
-            res.end(err);
-        });
-
-        stream.on('end', function() {
-            res.end();
-        });
+        res.writeHeader(301, {Location: img.url({store: 'full'})});
+        res.end();
 
     } else {
         res.writeHeader(404);

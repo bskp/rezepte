@@ -65,7 +65,6 @@ FlowRouter.route('/', {
 });
 
 
-
 ////////// List //////////
 
 Template.list.events({
@@ -445,7 +444,6 @@ Template.detail.helpers({
         for (label in r.images){
             image = Images.findOne( r.images[label] );
             if (!image){
-                debugger
                 console.log('Bild nicht in Datenbank.');
                 console.log(label);
                 break;

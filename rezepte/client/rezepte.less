@@ -204,6 +204,7 @@ aside{
         padding-bottom: 5em;
         min-height: 500px;
         white-space: pre-wrap;
+        .noFocusBorder;
     }
 
     p, ol, ul{
@@ -218,7 +219,8 @@ aside{
     }
 
     img{
-        max-width: 100%;
+        width: 100%;
+        border-radius: 1.5em;
     }
 
     #tags{
@@ -428,6 +430,9 @@ body.offset {
     #content{
         padding-left: 50px;
 
+        // Weissraum rechts des Texts reduzieren
+        padding-right: 1em;
+
         ul.ingredients{
             float: none;
             position: initial;
@@ -477,3 +482,9 @@ body.offset {
         box-shadow: none;
     }
 }
+
+.noFocusBorder {
+    &:focus {
+      outline: none;
+    }
+  }
