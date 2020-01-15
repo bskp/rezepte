@@ -2,7 +2,7 @@ Meteor.publish('rezepte', function() { return Rezepte.find(); });
 Meteor.publish('zutaten', function() { return Zutaten.find(); });
 Meteor.publish('tags', function() { return Tags.find(); });
 
-Meteor.publish('images', function(){ return Images.find({}); });
+Meteor.publish('files.imgs.all', function(){ return Imgs.find().cursor; });
 
 Meteor.methods({
 
@@ -28,13 +28,14 @@ Meteor.methods({
 Picker.route('/:name/img/:img', function(params, req, res, next) {
     var r = Rezepte.findOne({url: params.name});
     var img_id = r && r.images && r.images[ params.img ];
-    var img = img_id && Images.findOne( img_id );
 
-    if ( img ){
-        res.writeHeader(301, {Location: img.url({store: 'full'})});
+    img = img_id && Imgs.findOne( img_id );
+    if (img) {
+        res.writeHeader(301, {Location: img.link('full')});
         res.end();
+    }
 
-    } else {
+    else {
         res.writeHeader(404);
         res.end();
     }

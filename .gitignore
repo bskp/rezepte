@@ -3,4 +3,5 @@
 .DS_Store
 deploy/backups/
 lokal
-
+images/
+rezepte/node_modules

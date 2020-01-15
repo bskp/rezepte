@@ -1,3 +1,5 @@
+import { link } from "fs";
+
 // Client-side JavaScript, bundled and sent to client.
 
 var void_template = '#outdoorküche #vegi\n\nEin Beispielrezept! Der Weg ist das Ziel ~\n\nSandkuchen à la Bruno\n=====================\n\nFür 2 Personen, ca. 20 min.\n\n    2 Blätter Löwenzahn\n    1 kg Sand, grobkörnig\n    1 l Wasser, brackig\n    10 Margeritenköpfe\n\n1. In einem Kessel Wasser abmessen, Sand sorgfältig einrieseln lassen und während 15 min kräftig umrühren.\n2. Kessel herumzeigen. Margeriten beifügen und mit Löwenzahn abschmecken.\n\nIch nehme jeweils Sand, der von Katzen als Klo benutzt wurde. Gibt einfach das vollere Aroma ~mr\n';
@@ -7,7 +9,7 @@ var rezepteHandle = Meteor.subscribe('rezepte', function(){
 });
 var zutatenHandle = Meteor.subscribe('zutaten');
 var tagsHandle = Meteor.subscribe('tags');
-var imagesHandle = Meteor.subscribe('images');
+var imgsHandle = Meteor.subscribe('files.imgs.all');
 
 Session.setDefault('filter', null);
 Session.setDefault('rezept_id', null);
@@ -285,19 +287,30 @@ Template.detail.events({
 
         // File was dropped
         if (dT.files.length){
-            FS.Utility.eachFile(evt, function(file) {
-                Images.insert(file, function (err, fileObj) {
+            for (let file of dT.files) {
+                let upload = Imgs.insert({
+                    file: file,
+                    streams: 1,
+                    chunkSize: 'dynamic'
+                }, false);
 
-                    label = fileObj.original.name.split('.')[0];
+                upload.on('end', function (error, fileObj) {
+                    if (error) {
+                      alert('Error during upload: ' + error);
+                      return
+                    }
+
+                    label = fileObj.name.split('.')[0];
                     label = URLify2( label );
-
                     if (!r.images){
                         r.images = {};
                     }
                     r.images[label] = fileObj._id;
                     Rezepte.update(r._id, r);
                 });
-            });
+
+                upload.start();
+            }
             evt.preventDefault();
             return
         }
@@ -309,7 +322,7 @@ Template.detail.events({
             delete r.images[ label ];
 
             Rezepte.update(r._id, r);
-            Images.remove( img_id );
+            Imgs.remove( img_id );
 
             evt.preventDefault();
         }
@@ -414,8 +427,9 @@ Template.detail.converter = new Showdown.converter({ extensions: ['rezepte'] });
 
 Template.detail.helpers({
     images_ready: function() {
-        return imagesHandle.ready();
+        return imgsHandle.ready();
     },
+
     parse: function() {
         var r = Rezepte.findOne( Session.get('rezept_id') );
         if (r && r.text){
@@ -442,16 +456,17 @@ Template.detail.helpers({
         }
         ret = [];
         for (label in r.images){
-            image = Images.findOne( r.images[label] );
-            if (!image){
-                console.log('Bild nicht in Datenbank.');
-                console.log(label);
-                break;
+            image = Imgs.findOne( r.images[label] );
+            if (image) {
+                ret.push( {'label': label,
+                        'thumb': image.link('thumbnail'),
+                        'full': image.link('original')
+                });
+                continue;
             }
-            ret.push( {'label': label,
-                       'thumb': image.url({store: 'thumb'}),
-                       'full': image.url({store: 'full'}),
-            });
+
+            console.log('Bild nicht in Datenbank.');
+            console.log(label);
         }
         return ret
     },

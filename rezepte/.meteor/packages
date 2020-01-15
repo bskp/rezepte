@@ -7,8 +7,6 @@ insecure
 coffeescript
 less
 markdown-rz
-hitchcott:app-dump
-accounts-base
 fastclick
 kadira:flow-router
 altapp:urlify2-minifiable
@@ -26,9 +24,8 @@ ejson
 spacebars
 check
 perak:fuzzy-search
-cfs:standard-packages
-cfs:gridfs
-cfs:graphicsmagick
 standard-minifier-css
 standard-minifier-js
 meteorhacks:picker
+ostrio:files
+ecmascript

@@ -9,6 +9,9 @@ module.exports = {
   meteor: {
     name: 'rezepte',
     path: '../rezepte',
+    volumes: {
+      '/home/maroggo/rez_img':'/images'
+    },
     servers: {
       one: {},
     },
