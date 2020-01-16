@@ -45,9 +45,15 @@ const createVersion = function(img, version_label, transform) {
 }
 
 
+
+let fs_storage = '/images';  // within docker container
+if (Meteor.isDevelopment) {
+  fs_storage = `${process.env.PWD}/../images`;
+}
+
 Imgs = new FilesCollection({
   debug: false,
-  storagePath: '/images',
+  storagePath: fs_storage,
   permissions: 0o774,
   parentDirPermissions: 0o774,
   collectionName: 'imgs',
