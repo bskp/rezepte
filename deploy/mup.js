@@ -21,6 +21,11 @@ module.exports = {
       MONGO_URL: 'mongodb://localhost/meteor' 
     },
     dockerImage: 'ianmartorell/meteord-graphicsmagick',
+    docker: {
+      buildInstructions: [
+        'RUN cd /opt/meteor/dist/bundle/programs/server && npm uninstall fibers && npm install fibers'
+      ],
+    },
     enableUploadProgressBar: true,
   },
 
