@@ -1,5 +1,8 @@
-Rezepte
+Deprecated: Rezepte
 =======
+
+Has been redone: https://github.com/bskp/rezeptee
+
 
 Collaborative cookbook built with [Meteor](www.meteor.com).
 Features:
